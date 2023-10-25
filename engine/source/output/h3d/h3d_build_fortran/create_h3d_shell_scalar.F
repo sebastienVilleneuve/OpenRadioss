@@ -28,7 +28,7 @@ Chd|-- calls ---------------
 Chd|        ARRET                         source/system/arret.F         
 Chd|        H3D_MOD                       share/modules/h3d_mod.F       
 Chd|====================================================================
-      SUBROUTINE CREATE_H3D_SHELL_SCALAR(H3D_DATA,ID_SHELL_SCALAR ,N1       ,N2       ,ID_INPUT ,TEXT1  ,
+      SUBROUTINE CREATE_H3D_SHELL_SCALAR(H3D_DATA ,ID_INPUT ,TEXT1  ,
      .                                       STEXT1       ,COMMENT    ,SCOMMENT  ,IPART    ,KEY3_GLOB ,
      .                                       LAYER    ,IPT    ,PLY             ,GAUSS    ,IUVAR       ,
      .                                       IDMDS    ,IVARMDS,ID_MAT_MDS,MDS_LABEL, SMDS_LABEL       ,
@@ -46,7 +46,7 @@ C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
       TYPE (H3D_DATABASE) :: H3D_DATA
-      INTEGER ID_SHELL_SCALAR,ID_INPUT,STEXT1,N1,N2,SCOMMENT,
+      INTEGER ID_INPUT,STEXT1,N1,N2,SCOMMENT,
      .        LAYER,IPT,PLY,IUVAR,GAUSS,IDMDS,IVARMDS,SMDS_LABEL,
      .        ID_MAT_MDS,ID
       INTEGER IPART(LIPART1,*)

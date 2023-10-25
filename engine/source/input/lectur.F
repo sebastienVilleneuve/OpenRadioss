@@ -694,7 +694,7 @@ C
 C-------------------------------------------
 C     .h3d files
 C-------------------------------------------
-      CALL LECH3D(GEO,IGEO,IPM,IPART,H3D_DATA,MULTI_FVM,IPARI,IPARG,TAG_SKINS6,
+      CALL LECH3D(IGEO,IPM,IPART,H3D_DATA,MULTI_FVM,IPARI,IPARG,TAG_SKINS6,
      .            MDS_LABEL,MDS_OUTPUT_TABLE,MDS_NMAT,MAX_DEPVAR,MDS_NDEPSVAR,
      .            ELBUF_STR,STACK,IBCL,ILOADP,LLOADP,LOADS)
 c

@@ -27,8 +27,6 @@
 #include <math.h>
 #include <fcntl.h>
 
-
-
 #ifdef _WIN32
 /* Windows includes */
 #include <windows.h>
@@ -36,7 +34,6 @@
 #include <io.h>
 #include <sys\types.h>
 #include <sys/stat.h>
-
 
 #elif 1
 
@@ -56,109 +53,119 @@
 #include "h3dpublic_defs.h"
 #include "h3dpublic_export.h"
 
-#define _FCALL 
+#define _FCALL
 
 #include "h3d_values.h"
 
-extern "C" 
+extern "C"
 /*=================================================================*/
 {
 
-/*=================================================================*/
-/*        C_H3D_CREATE_SHELLS                                      */
-/*=================================================================*/
-void c_h3d_create_shells_(int *ITAB, int *NUMNOD, int *IXC, int *NIXC, int *NUMELC, int *IPARTC, int *IPART, int *LIPART1, int *H3D_PART)
-{
-    unsigned int * nbelems = new unsigned int [*NUMELC];
-    try {
+   /*=================================================================*/
+   /*        C_H3D_CREATE_SHELLS                                      */
+   /*=================================================================*/
+   void c_h3d_create_shells_(int *ITAB, int *NUMNOD, int *IXC, int *NIXC, int *NUMELC, int *IPARTC, int *IPART, int *LIPART1, int *H3D_PART)
+   {
+      unsigned int *nbelems = new unsigned int[*NUMELC];
+      try
+      {
 
+         //create Elements
+         unsigned int conn[4];
+         H3D_ID elem_id;
+         int i, j, cpt_elem, nbelemwrite;
 
-        // create Elements
-        unsigned int conn[4] ;
-        H3D_ID elem_id ;
-        int i,j,cpt_elem,nbelemwrite;
+         char SH4NPOOL[] = "SH4N";
+         rc = Hyper3DAddString(h3d_file, SH4NPOOL, &sh4n_poolname_id);
+         if (!rc)
+            throw rc;
 
-        char SH4NPOOL[] = "SH4N";
-        rc = Hyper3DAddString(h3d_file, SH4NPOOL, &sh4n_poolname_id);
-        if( !rc ) throw rc;
+         char SHELLPOOL[] = "Shell";
+         rc = Hyper3DAddString(h3d_file, SHELLPOOL, &shell_poolname_id);
+         if (!rc)
+            throw rc;
 
-        char SHELLPOOL[] = "Shell";
-        rc = Hyper3DAddString(h3d_file, SHELLPOOL, &shell_poolname_id);
-        if( !rc ) throw rc;
+         unsigned int elem_count = 1;
 
-        unsigned int elem_count = 1;
+         comp_id = 0;
+         j = 0;
+         for (i = 0; i < *NUMELC; i++)
+            nbelems[i] = 0;
 
-        comp_id = 0;
-        j = 0;
-        for(i=0;i<*NUMELC;i++)  nbelems[i] = 0;
-
-        for(i=0;i<*NUMELC;i++)
-        {  
-        if(H3D_PART[IPARTC[i] - 1] == 1)
-          {
-             if(IPART[*LIPART1 * (IPARTC[i] - 1) + 3] != comp_id)
-             {
+         for (i = 0; i < *NUMELC; i++)
+         {
+            if (H3D_PART[IPARTC[i] - 1] == 1)
+            {
+               if (IPART[*LIPART1 * (IPARTC[i] - 1) + 3] != comp_id)
+               {
                   comp_id = IPART[*LIPART1 * (IPARTC[i] - 1) + 3];
                   j = i;
-             }
-             nbelems[j] = nbelems[j] + 1;
-          }
-        }
+               }
+               nbelems[j] = nbelems[j] + 1;
+            }
+         }
 
-        comp_id = 0;
-        cpt_elem = 0;
-        nbelemwrite = 0;
+         comp_id = 0;
+         cpt_elem = 0;
+         nbelemwrite = 0;
 
-        for(i=0;i<*NUMELC;i++)  
-        {  
-        if(H3D_PART[IPARTC[i] - 1] == 1)
-          {
-             conn[0] = IXC[*NIXC * i + 1];
-             conn[1] = IXC[*NIXC * i + 2];
-             conn[2] = IXC[*NIXC * i + 3];
-             conn[3] = IXC[*NIXC * i + 4];
-             elem_id = IXC[*NIXC * i + *NIXC - 1];
+         for (i = 0; i < *NUMELC; i++)
+         {
+            if (H3D_PART[IPARTC[i] - 1] == 1)
+            {
+               conn[0] = IXC[*NIXC * i + 1];
+               conn[1] = IXC[*NIXC * i + 2];
+               conn[2] = IXC[*NIXC * i + 3];
+               conn[3] = IXC[*NIXC * i + 4];
+               elem_id = IXC[*NIXC * i + *NIXC - 1];
 
-             if(nbelems[i] != 0)
-             {
+               if (nbelems[i] != 0)
+               {
                   cpt_elem = 0;
                   nbelemwrite = nbelems[i];
-                  comp_id = IPART[*LIPART1 * (IPARTC[i] - 1) + 3] ;
+                  comp_id = IPART[*LIPART1 * (IPARTC[i] - 1) + 3];
 
-                  rc = Hyper3DElementBegin(h3d_file, nbelemwrite, sh4n_poolname_id, 
-                                    H3D_ELEM_CONFIG_QUAD4, comp_id, 
-                                    shell_poolname_id, node_poolname_id);
-                  if( !rc ) throw rc;
-             }
-             cpt_elem++;
-             rc = Hyper3DElementWrite(h3d_file, elem_id, conn);
-             if( !rc ) throw rc;
+                  rc = Hyper3DElementBegin(h3d_file, nbelemwrite, sh4n_poolname_id,
+                                           H3D_ELEM_CONFIG_QUAD4, comp_id,
+                                           shell_poolname_id, node_poolname_id);
+                  if (!rc)
+                     throw rc;
+               }
+               cpt_elem++;
+               rc = Hyper3DElementWrite(h3d_file, elem_id, conn);
+               if (!rc)
+                  throw rc;
 
-             if (cpt_elem == nbelemwrite)
-             {
+               if (cpt_elem == nbelemwrite)
+               {
                   rc = Hyper3DElementEnd(h3d_file);
-                  if( !rc ) throw rc;
-             }
-          }
-       }
+                  if (!rc)
+                     throw rc;
+               }
+            }
+         }
 
+      } //end of try
 
-    } // end of try
+      catch (...)
+      {
+         Hyper3DExportClearError(h3d_file);
+      }
+      delete[] nbelems;
+   }
 
-    catch(...) {
-        Hyper3DExportClearError(h3d_file);
-    }
-    delete [] nbelems;
+   void _FCALL C_H3D_CREATE_SHELLS(int *ITAB, int *NUMNOD, int *IXC, int *NIXC, int *NUMELC, int *IPARTC, int *IPART, int *LIPART1, int *H3D_PART)
+   {
+      c_h3d_create_shells_(ITAB, NUMNOD, IXC, NIXC, NUMELC, IPARTC, IPART, LIPART1, H3D_PART);
+   }
 
-}
+   void c_h3d_create_shells__(int *ITAB, int *NUMNOD, int *IXC, int *NIXC, int *NUMELC, int *IPARTC, int *IPART, int *LIPART1, int *H3D_PART)
+   {
+      c_h3d_create_shells_(ITAB, NUMNOD, IXC, NIXC, NUMELC, IPARTC, IPART, LIPART1, H3D_PART);
+   }
 
-void _FCALL C_H3D_CREATE_SHELLS(int *ITAB, int *NUMNOD, int *IXC, int *NIXC, int *NUMELC, int *IPARTC, int *IPART, int *LIPART1, int *H3D_PART)
-{c_h3d_create_shells_ (ITAB,NUMNOD,IXC,NIXC,NUMELC,IPARTC,IPART,LIPART1,H3D_PART);}
-
-void c_h3d_create_shells__ (int *ITAB, int *NUMNOD, int *IXC, int *NIXC, int *NUMELC, int *IPARTC, int *IPART, int *LIPART1, int *H3D_PART)
-{c_h3d_create_shells_ (ITAB,NUMNOD,IXC,NIXC,NUMELC,IPARTC,IPART,LIPART1,H3D_PART);}
-
-void c_h3d_create_shells (int *ITAB, int *NUMNOD, int *IXC, int *NIXC, int *NUMELC, int *IPARTC, int *IPART, int *LIPART1, int *H3D_PART)
-{c_h3d_create_shells_ (ITAB,NUMNOD,IXC,NIXC,NUMELC,IPARTC,IPART,LIPART1,H3D_PART);}
-
+   void c_h3d_create_shells(int *ITAB, int *NUMNOD, int *IXC, int *NIXC, int *NUMELC, int *IPARTC, int *IPART, int *LIPART1, int *H3D_PART)
+   {
+      c_h3d_create_shells_(ITAB, NUMNOD, IXC, NIXC, NUMELC, IPARTC, IPART, LIPART1, H3D_PART);
+   }
 }

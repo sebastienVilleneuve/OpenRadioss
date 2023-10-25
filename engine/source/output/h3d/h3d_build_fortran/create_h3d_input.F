@@ -30,7 +30,7 @@ Chd|        WRIUSC2                       source/input/wriusc2.F
 Chd|        NVAR                          source/input/nvar.F           
 Chd|        H3D_MOD                       share/modules/h3d_mod.F       
 Chd|====================================================================
-      SUBROUTINE CREATE_H3D_INPUT(H3D_DATA,IKAD,IKEY,IREC,NBC,KEY0,KEY2,KEY3,KEY4,KEY5,KEY6,KEY7,KEY8)
+      SUBROUTINE CREATE_H3D_INPUT(H3D_DATA,IKEY,IREC,NBC,KEY0,KEY2,KEY3,KEY4,KEY5,KEY6,KEY7,KEY8)
 C-----------------------------------------------
 C   M o d u l e s
 C-----------------------------------------------
@@ -46,7 +46,7 @@ C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
       TYPE (H3D_DATABASE) :: H3D_DATA
-      INTEGER IKAD(0:*),IKEY,IREC
+      INTEGER IKEY,IREC
       INTEGER NBC
       CHARACTER KEY0(*)*5 
       CHARACTER(LEN=ncharkey) :: KEY2, KEY3, KEY4, KEY5,KEY6,KEY7,KEY8

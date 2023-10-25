@@ -30,7 +30,7 @@ Chd|        ELBUFDEF_MOD                  ../common_source/modules/mat_elem/elbu
 Chd|        H3D_INC_MOD                   share/modules/h3d_inc_mod.F   
 Chd|        INITBUF_MOD                   share/resol/initbuf.F         
 Chd|====================================================================
-      SUBROUTINE H3D_SKIN_OFF(ELBUF_TAB,IPARG,IXS,IXS10,
+      SUBROUTINE H3D_SKIN_OFF(ELBUF_TAB,IPARG,IXS,
      .                        TAG_SKINS6,SKIN_OFF)
 C-----------------------------------------------
 C   M o d u l e s
@@ -55,7 +55,6 @@ C-----------------------------------------------
 C     REAL
       INTEGER, DIMENSION(NPARG,NGROUP),INTENT(IN):: IPARG
       INTEGER, DIMENSION(NIXS,NUMELS),INTENT(IN):: IXS
-      INTEGER, DIMENSION(6,NUMELS10),INTENT(IN):: IXS10
       INTEGER, DIMENSION(NUMELS),INTENT(IN):: TAG_SKINS6
       my_real, DIMENSION(NUMSKIN),INTENT(OUT):: SKIN_OFF
       TYPE (ELBUF_STRUCT_), DIMENSION(NGROUP), TARGET :: ELBUF_TAB

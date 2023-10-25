@@ -20,14 +20,12 @@
 //Copyright>    As an alternative to this open-source version, Altair also offers Altair Radioss
 //Copyright>    software under a commercial license.  Contact Altair to discuss further if the
 //Copyright>    commercial version may interest you: https://www.altair.com/radioss/.
-//    
+//
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
 #include <fcntl.h>
-
-
 
 #ifdef _WIN32
 /* Windows includes */
@@ -36,7 +34,6 @@
 #include <io.h>
 #include <sys\types.h>
 #include <sys/stat.h>
-
 
 #elif 1
 
@@ -55,7 +52,7 @@
 #include "h3dpublic_defs.h"
 #include "h3dpublic_export.h"
 
-#define _FCALL 
+#define _FCALL
 
 #include "h3d_values.h"
 
@@ -67,146 +64,161 @@
 #define my_real double
 #endif
 
-extern "C" 
+extern "C"
 /*=================================================================*/
 {
 
+  /*=================================================================*/
+  /*        C_H3D_UPDATE_H3DFILE_oned_torsor                        */
+  /*=================================================================*/
 
-/*=================================================================*/
-/*        C_H3D_UPDATE_H3DFILE_oned_torsor                        */
-/*=================================================================*/
-
-void c_h3d_update_oned_torsor_(my_real *TT,int *IH3D, int *ITAB, int *NUMELT, int *NUMELP, int *NUMELR, 
-                           my_real *FUNC ,int *ID_ELEM,int *CPT_DATATYPE, int *ITY_ELEM, int *IS_WRITTEN)
-{
+  void c_h3d_update_oned_torsor_(my_real *TT, int *IH3D, int *ITAB, int *NUMELT, int *NUMELP, int *NUMELR,
+                                 my_real *FUNC, int *ID_ELEM, int *CPT_DATATYPE, int *ITY_ELEM, int *IS_WRITTEN)
+  {
     int i;
     int offset;
     H3D_ID elem_id;
     H3D_ID comp_id;
-//
-    // initialize 
+    //
+    //initialize
 
-    try {
-        // create Subcase (Loadcase)
-        unsigned int       max_sims = 10;
-        unsigned int      sub_count = 1;
-        float elem_result[1] = { 0.0f};
+    try
+    {
+      //create Subcase (Loadcase)
+      unsigned int max_sims = 10;
+      unsigned int sub_count = 1;
+      float elem_result[1] = {0.0f};
 
-        // create Result Data sets
-        unsigned int num_corners = 0;
-        unsigned int   num_modes = 0;
-        bool             complex = false;
-        float value[1] ;
+      //create Result Data sets
+      unsigned int num_corners = 0;
+      unsigned int num_modes = 0;
+      bool complex = false;
+      float value[1];
 
-        sim_idx = *IH3D;
+      sim_idx = *IH3D;
 
-        char TRUSSPOOL[] = "TRUSS";
-        rc = Hyper3DAddString(h3d_file, TRUSSPOOL, &truss_poolname_id);
-        if( !rc ) throw rc;
+      char TRUSSPOOL[] = "TRUSS";
+      rc = Hyper3DAddString(h3d_file, TRUSSPOOL, &truss_poolname_id);
+      if (!rc)
+        throw rc;
 
-        char BEAMPOOL[] = "BEAM";
-        rc = Hyper3DAddString(h3d_file, BEAMPOOL, &beam_poolname_id);
-        if( !rc ) throw rc;
+      char BEAMPOOL[] = "BEAM";
+      rc = Hyper3DAddString(h3d_file, BEAMPOOL, &beam_poolname_id);
+      if (!rc)
+        throw rc;
 
-        char SPRINGPOOL[] = "SPRING";
-        rc = Hyper3DAddString(h3d_file, SPRINGPOOL, &spring_poolname_id);
-        if( !rc ) throw rc;
+      char SPRINGPOOL[] = "SPRING";
+      rc = Hyper3DAddString(h3d_file, SPRINGPOOL, &spring_poolname_id);
+      if (!rc)
+        throw rc;
 
+      if (*NUMELT != 0)
+      {
 
-        if( *NUMELT != 0 )
-            {
+        offset = 0;
 
-            offset = 0;
+        rc = Hyper3DDatasetBegin(h3d_file, *NUMELT, sim_idx, subcase_id, H3D_DS_ELEM,
+                                 H3D_DS_SCALAR, num_corners, num_modes, *CPT_DATATYPE,
+                                 NULL, truss_poolname_id, complex);
+        if (!rc)
+          throw rc;
 
-     	    rc = Hyper3DDatasetBegin(h3d_file, *NUMELT, sim_idx, subcase_id, H3D_DS_ELEM, 
-     	 				    H3D_DS_SCALAR, num_corners, num_modes, *CPT_DATATYPE, 
-     	 				    NULL, truss_poolname_id, complex); 
-     	    if( !rc ) throw rc;
+        for (i = 0; i < *NUMELT + *NUMELP + *NUMELR; i++)
+        {
+          if (ITY_ELEM[i] == 4 && IS_WRITTEN[i] == 1)
+          {
+            elem_id = ID_ELEM[i];
+            elem_result[0] = FUNC[9 * i];
+            rc = Hyper3DDatasetWrite(h3d_file, elem_id, &elem_result[0]);
+            if (!rc)
+              throw rc;
+            IS_WRITTEN[i] = 0;
+          }
+        }
+        rc = Hyper3DDatasetEnd(h3d_file);
+        if (!rc)
+          throw rc;
+      }
 
-     	    for( i = 0; i < *NUMELT + *NUMELP + *NUMELR; i++ ) 
-     	    {
-     	      if( ITY_ELEM[i] == 4  && IS_WRITTEN[i] == 1) 
-     	      { 
-     	 	elem_id = ID_ELEM[i];
-     	 	elem_result[0] = FUNC[9*i];
-     	 	rc = Hyper3DDatasetWrite(h3d_file, elem_id, &elem_result[0]);
-                if( !rc ) throw rc;
-                IS_WRITTEN[i] = 0;
-     	      }
-     	    }
-     	    rc = Hyper3DDatasetEnd(h3d_file);
-     	    if( !rc ) throw rc;
-            }
+      if (*NUMELP != 0)
+      {
 
+        offset = 0;
 
-        if( *NUMELP != 0 )
-            {
+        rc = Hyper3DDatasetBegin(h3d_file, *NUMELP, sim_idx, subcase_id, H3D_DS_ELEM,
+                                 H3D_DS_TENSOR3D, num_corners, num_modes, *CPT_DATATYPE,
+                                 NULL, beam_poolname_id, complex);
+        if (!rc)
+          throw rc;
 
-            offset = 0;
+        for (i = 0; i < *NUMELT + *NUMELP + *NUMELR; i++)
+        {
+          if (ITY_ELEM[i] == 5 && IS_WRITTEN[i] == 1)
+          {
+            elem_id = ID_ELEM[i];
+            elem_result[0] = FUNC[9 * i];
+            rc = Hyper3DDatasetWrite(h3d_file, elem_id, &elem_result[0]);
+            if (!rc)
+              throw rc;
+            IS_WRITTEN[i] = 0;
+          }
+        }
+        rc = Hyper3DDatasetEnd(h3d_file);
+        if (!rc)
+          throw rc;
+      }
 
-     	    rc = Hyper3DDatasetBegin(h3d_file, *NUMELP, sim_idx, subcase_id, H3D_DS_ELEM, 
-     	 				    H3D_DS_TENSOR3D, num_corners, num_modes, *CPT_DATATYPE, 
-     	 				    NULL, beam_poolname_id, complex); 
-     	    if( !rc ) throw rc;
+      if (*NUMELR != 0)
+      {
 
-     	    for( i = 0; i < *NUMELT + *NUMELP + *NUMELR; i++ ) 
-     	    {
-     	      if( ITY_ELEM[i] == 5  && IS_WRITTEN[i] == 1) 
-     	      { 
-     	 	elem_id = ID_ELEM[i];
-     	 	elem_result[0] = FUNC[9*i];
-     	 	rc = Hyper3DDatasetWrite(h3d_file, elem_id, &elem_result[0]);
-                if( !rc ) throw rc;
-                IS_WRITTEN[i] = 0;
-     	      }
-     	    }
-     	    rc = Hyper3DDatasetEnd(h3d_file);
-     	    if( !rc ) throw rc;
-            }
+        offset = 0;
 
+        rc = Hyper3DDatasetBegin(h3d_file, *NUMELR, sim_idx, subcase_id, H3D_DS_ELEM,
+                                 H3D_DS_TENSOR3D, num_corners, num_modes, *CPT_DATATYPE,
+                                 NULL, spring_poolname_id, complex);
+        if (!rc)
+          throw rc;
 
-        if( *NUMELR != 0 )
-            {
+        for (i = 0; i < *NUMELT + *NUMELP + *NUMELR; i++)
+        {
+          if (ITY_ELEM[i] == 6 && IS_WRITTEN[i] == 1)
+          {
+            elem_id = ID_ELEM[i];
+            elem_result[0] = FUNC[9 * i];
+            rc = Hyper3DDatasetWrite(h3d_file, elem_id, &elem_result[0]);
+            if (!rc)
+              throw rc;
+            IS_WRITTEN[i] = 0;
+          }
+        }
+        rc = Hyper3DDatasetEnd(h3d_file);
+        if (!rc)
+          throw rc;
+      }
 
-            offset = 0;
+    } //end of try
 
-     	    rc = Hyper3DDatasetBegin(h3d_file, *NUMELR, sim_idx, subcase_id, H3D_DS_ELEM, 
-     	 				    H3D_DS_TENSOR3D, num_corners, num_modes, *CPT_DATATYPE, 
-     	 				    NULL, spring_poolname_id, complex); 
-     	    if( !rc ) throw rc;
-
-     	    for( i = 0; i < *NUMELT + *NUMELP + *NUMELR; i++ ) 
-     	    {
-     	      if( ITY_ELEM[i] == 6  && IS_WRITTEN[i] == 1) 
-     	      { 
-     	 	elem_id = ID_ELEM[i];
-     	 	elem_result[0] = FUNC[9*i];
-     	 	rc = Hyper3DDatasetWrite(h3d_file, elem_id, &elem_result[0]);
-                if( !rc ) throw rc;
-                IS_WRITTEN[i] = 0;
-     	      }
-     	    }
-     	    rc = Hyper3DDatasetEnd(h3d_file);
-     	    if( !rc ) throw rc;
-            }
-
-    } // end of try
-
-    catch(...)    {
-        Hyper3DExportClearError(h3d_file);
+    catch (...)
+    {
+      Hyper3DExportClearError(h3d_file);
     }
-}
+  }
 
-void _FCALL C_H3D_UPDATE_ONED_TORSOR(my_real *TT,int *IH3D, int *ITAB, int *NUMELT, int *NUMELP, int *NUMELR, 
-                           my_real *FUNC ,int *ID_ELEM,int *CPT_DATATYPE, int *ITY_ELEM, int *IS_WRITTEN)
-{c_h3d_update_oned_torsor_ (TT,IH3D,ITAB,NUMELT,NUMELP,NUMELR,FUNC,ID_ELEM,CPT_DATATYPE,ITY_ELEM,IS_WRITTEN);}
+  void _FCALL C_H3D_UPDATE_ONED_TORSOR(my_real *TT, int *IH3D, int *ITAB, int *NUMELT, int *NUMELP, int *NUMELR,
+                                       my_real *FUNC, int *ID_ELEM, int *CPT_DATATYPE, int *ITY_ELEM, int *IS_WRITTEN)
+  {
+    c_h3d_update_oned_torsor_(TT, IH3D, ITAB, NUMELT, NUMELP, NUMELR, FUNC, ID_ELEM, CPT_DATATYPE, ITY_ELEM, IS_WRITTEN);
+  }
 
-void c_h3d_update_oned_torsor__ (my_real *TT,int *IH3D, int *ITAB, int *NUMELT, int *NUMELP, int *NUMELR, 
-                           my_real *FUNC ,int *ID_ELEM,int *CPT_DATATYPE, int *ITY_ELEM, int *IS_WRITTEN)
-{c_h3d_update_oned_torsor_ (TT,IH3D,ITAB,NUMELT,NUMELP,NUMELR,FUNC,ID_ELEM,CPT_DATATYPE,ITY_ELEM,IS_WRITTEN);}
+  void c_h3d_update_oned_torsor__(my_real *TT, int *IH3D, int *ITAB, int *NUMELT, int *NUMELP, int *NUMELR,
+                                  my_real *FUNC, int *ID_ELEM, int *CPT_DATATYPE, int *ITY_ELEM, int *IS_WRITTEN)
+  {
+    c_h3d_update_oned_torsor_(TT, IH3D, ITAB, NUMELT, NUMELP, NUMELR, FUNC, ID_ELEM, CPT_DATATYPE, ITY_ELEM, IS_WRITTEN);
+  }
 
-void c_h3d_update_oned_torsor (my_real *TT,int *IH3D, int *ITAB, int *NUMELT, int *NUMELP, int *NUMELR, 
-                           my_real *FUNC ,int *ID_ELEM,int *CPT_DATATYPE, int *ITY_ELEM, int *IS_WRITTEN)
-{c_h3d_update_oned_torsor_ (TT,IH3D,ITAB,NUMELT,NUMELP,NUMELR,FUNC,ID_ELEM,CPT_DATATYPE,ITY_ELEM,IS_WRITTEN);}
-
+  void c_h3d_update_oned_torsor(my_real *TT, int *IH3D, int *ITAB, int *NUMELT, int *NUMELP, int *NUMELR,
+                                my_real *FUNC, int *ID_ELEM, int *CPT_DATATYPE, int *ITY_ELEM, int *IS_WRITTEN)
+  {
+    c_h3d_update_oned_torsor_(TT, IH3D, ITAB, NUMELT, NUMELP, NUMELR, FUNC, ID_ELEM, CPT_DATATYPE, ITY_ELEM, IS_WRITTEN);
+  }
 }

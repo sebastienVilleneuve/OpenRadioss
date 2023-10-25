@@ -30,8 +30,8 @@ Chd|        MESSAGE_MOD                   share/message_module/message_mod.F
 Chd|        MULTI_FVM_MOD                 ../common_source/modules/ale/multi_fvm_mod.F
 Chd|====================================================================
       SUBROUTINE H3D_GENE_KEYWORD(KEY2_READ,KEY2,KEY3_READ,KEY3_GLOB,NB_KEY,CPT_KEY,MULTI_FVM,
-     .                            IS_MODEL_NPT,IS_MODEL_LAYER,IS_MODEL_PLY,IS_MDSVAR,IS_MDSVAR_DEF,
-     .                            IS_PLY_ALL,IS_LAYER_ALL,IS_IPT,IS_LAYER,IS_PLY,IS_ID)
+     .                            IS_MODEL_LAYER,IS_MODEL_PLY,IS_MDSVAR,IS_MDSVAR_DEF,
+     .                            IS_PLY_ALL,IS_LAYER_ALL,IS_IPT,IS_LAYER,IS_PLY)
 C-----------------------------------------------
 C   M o d u l e s
 C-----------------------------------------------
@@ -60,9 +60,9 @@ C-----------------------------------------------
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
-      INTEGER I,J,NIPMAX,I1,I2,II,IS_MODEL_NPT,IS_MODEL_LAYER,IS_MODEL_PLY,
+      INTEGER I,J,NIPMAX,I1,I2,II,IS_MODEL_LAYER,IS_MODEL_PLY,
      .        IS_MDSVAR,IS_MDSVAR_DEF,IS_PLY_ALL,IS_LAYER_ALL,IS_IPT,
-     .        IS_LAYER,IS_PLY,IS_ID
+     .        IS_LAYER,IS_PLY
       CHARACTER(LEN=2) :: CH_OPTION
 c-----------------------------------------------
       IF (KEY2_READ == 'MASS') THEN

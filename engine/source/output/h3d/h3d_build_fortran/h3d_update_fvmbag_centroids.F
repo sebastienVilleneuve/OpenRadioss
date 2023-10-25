@@ -27,7 +27,7 @@ Chd|        GENH3D                        source/output/h3d/h3d_results/genh3d.F
 Chd|-- calls ---------------
 Chd|        FVBAG_MOD                     share/modules/fvbag_mod.F     
 Chd|====================================================================
-      SUBROUTINE H3D_UPDATE_FVMBAG_CENTROIDS(H3DTITLE,LEN_H3DTITLE,IH3D,MONVOL,VOLMON, NFVBAG, SMONVOL, SVOLMON,
+      SUBROUTINE H3D_UPDATE_FVMBAG_CENTROIDS(H3DTITLE,LEN_H3DTITLE,IH3D,MONVOL, NFVBAG, SMONVOL,
      .                                       FVDATA_P, AIRBAGS_NODE_ID_SHIFT)
 C-----------------------------------------------
 C   D e s c r i p t i o n
@@ -58,8 +58,7 @@ C-----------------------------------------------
 C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
-      INTEGER,INTENT(IN) :: NFVBAG, SMONVOL,SVOLMON, AIRBAGS_NODE_ID_SHIFT
-      my_real,INTENT(IN) :: VOLMON(SVOLMON)
+      INTEGER,INTENT(IN) :: NFVBAG, SMONVOL, AIRBAGS_NODE_ID_SHIFT
       INTEGER,INTENT(IN) :: MONVOL(SMONVOL) 
       CHARACTER*80,INTENT(IN):: H3DTITLE  
       INTEGER,INTENT(IN) :: LEN_H3DTITLE , IH3D 

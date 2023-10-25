@@ -20,7 +20,7 @@
 //Copyright>    As an alternative to this open-source version, Altair also offers Altair Radioss
 //Copyright>    software under a commercial license.  Contact Altair to discuss further if the
 //Copyright>    commercial version may interest you: https://www.altair.com/radioss/.
-//    
+//
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -34,7 +34,6 @@
 #include <io.h>
 #include <sys\types.h>
 #include <sys/stat.h>
-
 
 #elif 1
 
@@ -54,40 +53,46 @@
 #include "h3dpublic_defs.h"
 #include "h3dpublic_export.h"
 
-#define _FCALL 
+#define _FCALL
 
 #include "h3d_values.h"
 
-extern "C" 
+extern "C"
 /*=================================================================*/
 {
-/*=================================================================*/
-/*        CLOSE_H3D_FILE                                            */
-/*=================================================================*/
-void c_h3d_close_file_()
-{
-    try { 
-        //
-        //  close h3d file
-        //
-        rc = Hyper3DExportClose(h3d_file);
-        if( !rc ) throw rc;
-    } // end of try
+    /*=================================================================*/
+    /*        CLOSE_H3D_FILE                                            */
+    /*=================================================================*/
+    void c_h3d_close_file_()
+    {
+        try
+        {
+            //
+            // close h3d file
+            //
+            rc = Hyper3DExportClose(h3d_file);
+            if (!rc)
+                throw rc;
+        } //end of try
 
-    catch(...) {
-        Hyper3DExportClearError(h3d_file);
+        catch (...)
+        {
+            Hyper3DExportClearError(h3d_file);
+        }
+    }
+
+    void _FCALL C_H3D_CLOSE_FILE()
+    {
+        c_h3d_close_file_();
+    }
+
+    void c_h3d_close_file__()
+    {
+        c_h3d_close_file_();
+    }
+
+    void c_h3d_close_file()
+    {
+        c_h3d_close_file_();
     }
 }
-
-void _FCALL C_H3D_CLOSE_FILE()
-{c_h3d_close_file_ ();}
-
-void c_h3d_close_file__ ()
-{c_h3d_close_file_ ();}
-
-void c_h3d_close_file ()
-{c_h3d_close_file_ ();}
-
-
-}
-

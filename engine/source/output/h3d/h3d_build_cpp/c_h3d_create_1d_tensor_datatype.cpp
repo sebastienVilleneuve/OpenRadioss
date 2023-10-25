@@ -27,8 +27,6 @@
 #include <math.h>
 #include <fcntl.h>
 
-
-
 #ifdef _WIN32
 /* Windows includes */
 #include <windows.h>
@@ -36,7 +34,6 @@
 #include <io.h>
 #include <sys\types.h>
 #include <sys/stat.h>
-
 
 #elif 1
 
@@ -56,148 +53,161 @@
 #include "h3dpublic_defs.h"
 #include "h3dpublic_export.h"
 
-#define _FCALL 
+#define _FCALL
 
 #include "h3d_values.h"
 
-extern "C" 
+extern "C"
 /*=================================================================*/
 {
 
-/*=================================================================*/
-/*        C_H3D_CREATE_1D_TENSOR_DATATYPE                       */
-/*=================================================================*/
+    /*=================================================================*/
+    /*        C_H3D_CREATE_1D_TENSOR_DATATYPE                       */
+    /*=================================================================*/
 
-void c_h3d_create_1d_tensor_datatype_(int *cpt_data, char *name, int *size, int *info1, char *name1, int *size1,
-                                      char *comment, int *s_comment, int *ipt)
-{
-    
-    char *cname,*cname1,*ccomment;
-    int cname_len,cname_len1,ccomment_len;
-    int i;
-    float node[3]; 
-    H3D_ID node_id;
-    unsigned int elem_count = 1;
-//
-    cname_len = *size + 1;
-    cname=(char*) malloc(sizeof(char)*cname_len);
-    for(i=0;i<*size;i++)  cname[i] = name[i];
-    cname[*size]='\0'; 
-
-    cname_len1 = *size1 + 1;
-    cname1=(char*) malloc(sizeof(char)*cname_len1);
-    for(i=0;i<*size1;i++)  cname1[i] = name1[i];
-    cname1[*size1]='\0'; 
-
-    ccomment_len = *s_comment + 1;
-    ccomment=(char*) malloc(sizeof(char)*ccomment_len);
-    for(i=0;i<*s_comment;i++)  ccomment[i] = comment[i];
-    ccomment[*s_comment]='\0'; 
-
-    char * LAYERPOOL = new char [100];
-    LAYERPOOL[0] ='\0'; 
-    char * IPT_STRING = new char [100];
-    IPT_STRING[0] ='\0'; 
-
-    H3D_ID layer_pool_id = H3D_NULL_ID;
-    if(*ipt > 0)
+    void c_h3d_create_1d_tensor_datatype_(int *cpt_data, char *name, int *size, int *info1, char *name1, int *size1,
+                                          char *comment, int *s_comment, int *ipt)
     {
-      sprintf(IPT_STRING, "IPT %d" ,*ipt);
-    }
-    else
-    {
-      sprintf(IPT_STRING, "Mid" );
-    }
-    
+
+        char *cname, *cname1, *ccomment;
+        int cname_len, cname_len1, ccomment_len;
+        int i;
+        float node[3];
+        H3D_ID node_id;
+        unsigned int elem_count = 1;
+        //
+        cname_len = *size + 1;
+        cname = (char *)malloc(sizeof(char) * cname_len);
+        for (i = 0; i < *size; i++)
+            cname[i] = name[i];
+        cname[*size] = '\0';
+
+        cname_len1 = *size1 + 1;
+        cname1 = (char *)malloc(sizeof(char) * cname_len1);
+        for (i = 0; i < *size1; i++)
+            cname1[i] = name1[i];
+        cname1[*size1] = '\0';
+
+        ccomment_len = *s_comment + 1;
+        ccomment = (char *)malloc(sizeof(char) * ccomment_len);
+        for (i = 0; i < *s_comment; i++)
+            ccomment[i] = comment[i];
+        ccomment[*s_comment] = '\0';
+
+        char *LAYERPOOL = new char[100];
+        LAYERPOOL[0] = '\0';
+        char *IPT_STRING = new char[100];
+        IPT_STRING[0] = '\0';
+
+        H3D_ID layer_pool_id = H3D_NULL_ID;
+        if (*ipt > 0)
+        {
+            sprintf(IPT_STRING, "IPT %d", *ipt);
+        }
+        else
+        {
+            sprintf(IPT_STRING, "Mid");
+        }
+
 #ifdef _WIN64
-    strcat_s(LAYERPOOL,100,IPT_STRING);
+        strcat_s(LAYERPOOL, 100, IPT_STRING);
 #else
-    LAYERPOOL = strcat(LAYERPOOL,IPT_STRING);
+        LAYERPOOL = strcat(LAYERPOOL, IPT_STRING);
 #endif
 
-    rc = Hyper3DAddString(h3d_file, LAYERPOOL, &layer_pool_id);
+        rc = Hyper3DAddString(h3d_file, LAYERPOOL, &layer_pool_id);
 
+        char edata_type[50];
 
-    char edata_type[50];
-
-    try {
-
-        char TRUSSPOOL[] = "TRUSS";
-        rc = Hyper3DAddString(h3d_file, TRUSSPOOL, &truss_poolname_id);
-        if( !rc ) throw rc;
-
-        char BEAMPOOL[] = "BEAM";
-        rc = Hyper3DAddString(h3d_file, BEAMPOOL, &beam_poolname_id);
-        if( !rc ) throw rc;
-
-        char SPRINGPOOL[] = "SPRING";
-        rc = Hyper3DAddString(h3d_file, SPRINGPOOL, &spring_poolname_id);
-        if( !rc ) throw rc;
-
-        // create result data types
-        dt_count++;
-
-        rc = Hyper3DDatatypeBegin(h3d_file, 1);
-        if( !rc ) throw rc;
-
-        pool_count = 3;
-
-        dt_id++; 
-        sprintf(edata_type,  cname, H3D_DT_DELIMITER); 
-
-        rc = Hyper3DDatatypeWrite(h3d_file, edata_type, *cpt_data , H3D_DS_TENSOR3D, 
-                                    H3D_DS_ELEM, pool_count);
-        if( !rc ) throw rc;
-
-        if (strlen(ccomment) != 0) 
+        try
         {
-             rc = Hyper3DDatatypeDescriptionWrite(h3d_file, *cpt_data, ccomment);
-             if( !rc ) throw rc;
-        }
- 
- 
-        if (*cpt_data != 0)
+
+            char TRUSSPOOL[] = "TRUSS";
+            rc = Hyper3DAddString(h3d_file, TRUSSPOOL, &truss_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char BEAMPOOL[] = "BEAM";
+            rc = Hyper3DAddString(h3d_file, BEAMPOOL, &beam_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char SPRINGPOOL[] = "SPRING";
+            rc = Hyper3DAddString(h3d_file, SPRINGPOOL, &spring_poolname_id);
+            if (!rc)
+                throw rc;
+
+            //create result data types
+            dt_count++;
+
+            rc = Hyper3DDatatypeBegin(h3d_file, 1);
+            if (!rc)
+                throw rc;
+
+            pool_count = 3;
+
+            dt_id++;
+            sprintf(edata_type, cname, H3D_DT_DELIMITER);
+
+            rc = Hyper3DDatatypeWrite(h3d_file, edata_type, *cpt_data, H3D_DS_TENSOR3D,
+                                      H3D_DS_ELEM, pool_count);
+            if (!rc)
+                throw rc;
+
+            if (strlen(ccomment) != 0)
+            {
+                rc = Hyper3DDatatypeDescriptionWrite(h3d_file, *cpt_data, ccomment);
+                if (!rc)
+                    throw rc;
+            }
+
+            if (*cpt_data != 0)
+            {
+                rc = Hyper3DDatatypePools(h3d_file, *cpt_data, truss_poolname_id, 1,
+                                          &layer_pool_id, has_corners, tensor_type, poisson);
+                if (!rc)
+                    throw rc;
+
+                rc = Hyper3DDatatypePools(h3d_file, *cpt_data, beam_poolname_id, 1,
+                                          &layer_pool_id, has_corners, tensor_type, poisson);
+                if (!rc)
+                    throw rc;
+
+                rc = Hyper3DDatatypePools(h3d_file, *cpt_data, spring_poolname_id, 1,
+                                          &layer_pool_id, has_corners, tensor_type, poisson);
+            }
+
+            rc = Hyper3DDatatypeEnd(h3d_file);
+            if (!rc)
+                throw rc;
+
+        } //end of try
+
+        catch (...)
         {
-            rc = Hyper3DDatatypePools(h3d_file, *cpt_data , truss_poolname_id, 1, 
-                                    &layer_pool_id, has_corners, tensor_type, poisson);
-            if( !rc ) throw rc;
-        
-            rc = Hyper3DDatatypePools(h3d_file, *cpt_data , beam_poolname_id, 1, 
-                                    &layer_pool_id, has_corners, tensor_type, poisson);
-            if( !rc ) throw rc;
-        
-            rc = Hyper3DDatatypePools(h3d_file, *cpt_data , spring_poolname_id, 1, 
-                                    &layer_pool_id, has_corners, tensor_type, poisson);
+            Hyper3DExportClearError(h3d_file);
         }
-
-        rc = Hyper3DDatatypeEnd(h3d_file);
-        if( !rc ) throw rc;
-
-    } // end of try
-
-    catch(...) {
-        Hyper3DExportClearError(h3d_file);
+        delete[] LAYERPOOL;
+        free(cname);
+        free(cname1);
+        free(ccomment);
     }
-    delete [] LAYERPOOL; 
-    free(cname);
-    free(cname1);
-    free(ccomment);
 
-}
+    void _FCALL C_H3D_CREATE_1D_TENSOR_DATATYPE(int *cpt_data, char *name, int *size, int *info1, char *name1, int *size1,
+                                                char *comment, int *s_comment, int *ipt)
+    {
+        c_h3d_create_1d_tensor_datatype_(cpt_data, name, size, info1, name1, size1, comment, s_comment, ipt);
+    }
 
+    void c_h3d_create_1d_tensor_datatype__(int *cpt_data, char *name, int *size, int *info1, char *name1, int *size1,
+                                           char *comment, int *s_comment, int *ipt)
+    {
+        c_h3d_create_1d_tensor_datatype_(cpt_data, name, size, info1, name1, size1, comment, s_comment, ipt);
+    }
 
-
-
-void _FCALL C_H3D_CREATE_1D_TENSOR_DATATYPE(int *cpt_data, char *name, int *size, int *info1, char *name1, int *size1,
-                                            char *comment, int *s_comment, int *ipt)
-{c_h3d_create_1d_tensor_datatype_ (cpt_data, name, size, info1, name1, size1, comment, s_comment, ipt);}
-
-void c_h3d_create_1d_tensor_datatype__ (int *cpt_data, char *name, int *size, int *info1, char *name1, int *size1,
-                                        char *comment, int *s_comment, int *ipt)
-{c_h3d_create_1d_tensor_datatype_ (cpt_data, name, size, info1, name1, size1, comment, s_comment, ipt);}
-
-void c_create_1d_tensor_datatype (int *cpt_data, char *name, int *size, int *info1, char *name1, int *size1,
-                                  char *comment, int *s_comment, int *ipt)
-{c_h3d_create_1d_tensor_datatype_ (cpt_data, name, size, info1, name1, size1, comment, s_comment, ipt);}
-
+    void c_create_1d_tensor_datatype(int *cpt_data, char *name, int *size, int *info1, char *name1, int *size1,
+                                     char *comment, int *s_comment, int *ipt)
+    {
+        c_h3d_create_1d_tensor_datatype_(cpt_data, name, size, info1, name1, size1, comment, s_comment, ipt);
+    }
 }

@@ -28,9 +28,9 @@ Chd|-- calls ---------------
 Chd|        H3D_WRITE_TORSOR              source/output/h3d/h3d_results/h3d_write_torsor.F
 Chd|====================================================================
       SUBROUTINE H3D_ONED_TORSOR(
-     .                   IPARG   , IFUNC          , IXT     , IXP      , IXR   ,
-     .                   TORS    , ONED_TORSOR    , ID_ELEM , ITY_ELEM , INFO1 ,
-     .                   INFO2   , IS_WRITTEN_ONED, IPARTT  , IPARTP   , IPARTR,
+     .                   IPARG   , IXT            , IXP      , IXR   ,
+     .                   TORS    , ONED_TORSOR    , ID_ELEM , ITY_ELEM ,
+     .                   IS_WRITTEN_ONED, IPARTT  , IPARTP   , IPARTR,
      .                   H3D_PART, KEYWORD        )
 C-----------------------------------------------
 C   I m p l i c i t   T y p e s
@@ -50,7 +50,7 @@ C-----------------------------------------------
 C     REAL
       my_real
      .   EVAR(9,MVSIZ),TORS(15,*),ONED_TORSOR(9,*)
-      INTEGER IPARG(NPARG,*),IFUNC,INFO1 ,INFO2 ,
+      INTEGER IPARG(NPARG,*),
      .   IXT(NIXT,*),IXP(NIXP,*),IXR(NIXR,*),
      .   IS_WRITTEN_ONED(*),ID_ELEM(*),ITY_ELEM(*),
      .        IPARTT(*) ,IPARTP(*),IPARTR(*),H3D_PART(*)
@@ -174,7 +174,7 @@ C------------------------------------------------
           ENDIF
 
           CALL H3D_WRITE_TORSOR(IOK_PART,IS_WRITTEN_ONED,ONED_TORSOR,NEL,OFFSET,NFT,
-     .          		   EVAR)
+     .                   EVAR)
 
         ELSEIF(ITY==5)THEN
 C-----------------------------------------------
@@ -243,7 +243,7 @@ C------------------------------------------------
           ENDIF
 
           CALL H3D_WRITE_TORSOR(IOK_PART,IS_WRITTEN_ONED,ONED_TORSOR,NEL,OFFSET,NFT,
-     .          		   EVAR)
+     .                   EVAR)
         ELSEIF(ITY==6)THEN
 C-----------------------------------------------
           IF (KEYWORD == 'F1') THEN
@@ -311,7 +311,7 @@ C------------------------------------------------
           ENDIF
 
           CALL H3D_WRITE_TORSOR(IOK_PART,IS_WRITTEN_ONED,ONED_TORSOR,NEL,OFFSET,NFT,
-     .          		   EVAR)
+     .                   EVAR)
         ENDIF
 C-----------------------------------------------
       ENDDO

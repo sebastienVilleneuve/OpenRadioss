@@ -243,12 +243,12 @@ c------------tensor
         ENDDO
 
 
-        CALL C_H3D_CREATE_SHELL_ERODED(H3D_DATA%N_OUTP_H3D+3, 'Erosion Status', 14,0,'',0)
-        CALL C_H3D_CREATE_SOLID_ERODED(H3D_DATA%N_OUTP_H3D+4, 'Erosion Status', 14,0,'',0)
-        CALL C_H3D_CREATE_ONED_ERODED(H3D_DATA%N_OUTP_H3D+5, 'Erosion Status', 14,0,'',0)
-        CALL C_H3D_CREATE_SPH_ERODED(H3D_DATA%N_OUTP_H3D+6, 'Erosion Status', 14,0,'',0)
-        CALL C_H3D_CREATE_QUAD_ERODED(H3D_DATA%N_OUTP_H3D+7, 'Erosion Status', 14,0,'',0)
-        CALL C_H3D_CREATE_SKIN_ERODED(H3D_DATA%N_OUTP_H3D+8, 'Erosion Status', 14,0,'',0)
+        CALL C_H3D_CREATE_SHELL_ERODED(H3D_DATA%N_OUTP_H3D+3, 'Erosion Status', 14)
+        CALL C_H3D_CREATE_SOLID_ERODED(H3D_DATA%N_OUTP_H3D+4, 'Erosion Status', 14)
+        CALL C_H3D_CREATE_ONED_ERODED(H3D_DATA%N_OUTP_H3D+5, 'Erosion Status', 14)
+        CALL C_H3D_CREATE_SPH_ERODED(H3D_DATA%N_OUTP_H3D+6, 'Erosion Status', 14)
+        CALL C_H3D_CREATE_QUAD_ERODED(H3D_DATA%N_OUTP_H3D+7, 'Erosion Status', 14)
+        CALL C_H3D_CREATE_SKIN_ERODED(H3D_DATA%N_OUTP_H3D+8, 'Erosion Status', 14)
 
 
         RETURN

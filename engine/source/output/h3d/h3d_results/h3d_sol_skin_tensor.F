@@ -36,8 +36,8 @@ Chd|        INITBUF_MOD                   share/resol/initbuf.F
 Chd|====================================================================
       SUBROUTINE H3D_SOL_SKIN_TENSOR(
      .                   ELBUF_TAB,SKIN_TENSOR, IPARG   ,IXS     ,X     ,PM  ,
-     4                   IPARTS  ,IPM     ,IGEO    ,IXS10 ,IXS16 , IXS20  ,
-     5                   IS_WRITTEN_SKIN  ,H3D_PART,INFO1   ,KEYWORD ,NSKIN ,
+     4                   IPARTS  ,IXS10 ,IXS16 , IXS20  ,
+     5                   IS_WRITTEN_SKIN  ,H3D_PART,KEYWORD ,NSKIN ,
      6                   IAD_ELEM        ,FR_ELEM     , WEIGHT  , TAG_SKINS6   )
 C-----------------------------------------------
 C   M o d u l e s
@@ -63,10 +63,10 @@ C     REAL
       my_real
      .   SKIN_TENSOR(3,*),PM(NPROPM,*), X(3,*)
       INTEGER IPARG(NPARG,*), 
-     .   IXS(NIXS,*),IPM(NPROPMI,*),IPARTS(*),
+     .   IXS(NIXS,*),IPARTS(*),
      .   IXS10(6,*) ,IXS16(8,*) ,IXS20(12,*) ,
-     .   IGEO(NPROPGI,*),IS_WRITTEN_SKIN(*),
-     .   H3D_PART(*),INFO1,NSKIN,TAG_SKINS6(*),IAD_ELEM(2,*),FR_ELEM(*),WEIGHT(*)
+     .   IS_WRITTEN_SKIN(*),
+     .   H3D_PART(*),NSKIN,TAG_SKINS6(*),IAD_ELEM(2,*),FR_ELEM(*),WEIGHT(*)
       TYPE (ELBUF_STRUCT_), DIMENSION(NGROUP), TARGET :: ELBUF_TAB
       CHARACTER*ncharline KEYWORD
 C-----------------------------------------------
@@ -115,9 +115,9 @@ C------TAG_SKIN_ND only the big seg(mid-node of S10 not include)
         END DO
        IOK_PART(1:MVSIZ)=0
        IF (KEYWORD == 'TENS/STRESS/OUTER') THEN
-         CALL TENSGPS_SKIN(ELBUF_TAB,VFLU	 ,AFLU    ,IPARG   ,
-     .  	       IXS	,IXS10   ,IXS16   ,IXS20   ,
-     .  	       X	,ITAGPS  ,PM	  ,TAG_SKIN_ND)
+         CALL TENSGPS_SKIN(ELBUF_TAB,VFLU    ,AFLU    ,IPARG   ,
+     .            IXS   ,IXS10   ,IXS16   ,IXS20   ,
+     .            X   ,ITAGPS  ,PM     ,TAG_SKIN_ND)
 
          IF(NSPMD > 1)THEN
            LENR = IAD_ELEM(1,NSPMD+1)-IAD_ELEM(1,1)

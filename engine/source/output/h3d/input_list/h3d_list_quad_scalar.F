@@ -30,7 +30,7 @@ Chd|        MESSAGE_MOD                   share/message_module/message_mod.F
 Chd|        MULTI_FVM_MOD                 ../common_source/modules/ale/multi_fvm_mod.F
 Chd|        STACK_MOD                     share/modules/stack_mod.F     
 Chd|====================================================================
-      SUBROUTINE H3D_LIST_QUAD_SCALAR(H3D_KEYWORD_QUAD_SCALAR,GEO,IGEO,MULTI_FVM,NKEY)
+      SUBROUTINE H3D_LIST_QUAD_SCALAR(H3D_KEYWORD_QUAD_SCALAR,MULTI_FVM,NKEY)
 C-----------------------------------------------
 C   M o d u l e s
 C-----------------------------------------------
@@ -46,8 +46,6 @@ C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
       TYPE (H3D_KEYWORD) H3D_KEYWORD_QUAD_SCALAR(*)
-      my_real GEO(NPROPG,NUMGEO)
-      INTEGER IGEO(NPROPGI,NUMGEO)
       TYPE(MULTI_FVM_STRUCT), INTENT(IN) :: MULTI_FVM
       INTEGER, INTENT(INOUT) :: NKEY
 C-----------------------------------------------

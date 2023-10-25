@@ -28,7 +28,7 @@ Chd|-- calls ---------------
 Chd|        ARRET                         source/system/arret.F         
 Chd|        H3D_MOD                       share/modules/h3d_mod.F       
 Chd|====================================================================
-      SUBROUTINE CREATE_H3D_QUAD_TENSOR(H3D_DATA,ID_QUAD_TENSOR,ID_INPUT,TEXT1,STEXT1,
+      SUBROUTINE CREATE_H3D_QUAD_TENSOR(H3D_DATA,ID_INPUT,TEXT1,STEXT1,
      .                                  COMMENT,SCOMMENT,IPART,KEY3_GLOB,LAYER,IR,IS,IT,IUVAR)
 C-----------------------------------------------
 C   M o d u l e s
@@ -43,7 +43,7 @@ C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
       TYPE (H3D_DATABASE) :: H3D_DATA
-      INTEGER ID_QUAD_TENSOR,ID_INPUT,STEXT1,SCOMMENT,LAYER,IR,IS,IT,IUVAR
+      INTEGER ID_INPUT,STEXT1,SCOMMENT,LAYER,IR,IS,IT,IUVAR
       INTEGER IPART(LIPART1,*)
       CHARACTER(LEN=STEXT1) :: TEXT1
       CHARACTER(LEN=ncharline) :: KEY3_GLOB

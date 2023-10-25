@@ -29,7 +29,7 @@ Chd|        H3D_MOD                       share/modules/h3d_mod.F
 Chd|        MESSAGE_MOD                   share/message_module/message_mod.F
 Chd|        STACK_MOD                     share/modules/stack_mod.F     
 Chd|====================================================================
-      SUBROUTINE H3D_LIST_SHELL_TENSOR(H3D_KEYWORD_SHELL_TENSOR,GEO,IGEO, NKEY)
+      SUBROUTINE H3D_LIST_SHELL_TENSOR(H3D_KEYWORD_SHELL_TENSOR,NKEY)
 C-----------------------------------------------
 C   M o d u l e s
 C-----------------------------------------------
@@ -49,9 +49,7 @@ C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
       TYPE (H3D_KEYWORD) H3D_KEYWORD_SHELL_TENSOR(*)
-      my_real GEO(NPROPG,NUMGEO)
       INTEGER, INTENT(INOUT) :: NKEY
-      INTEGER IGEO(NPROPGI,NUMGEO)
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------

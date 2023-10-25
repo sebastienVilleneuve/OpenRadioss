@@ -72,10 +72,9 @@ C MPI variables
       DATA MSGOFF/7020/
       DATA MSGOFF2/7021/
 C-----------------------------------------------
-C     1ere etape - envoyer au proc 0 un tableau avec nombre
-C                  noeuds secnds locaux par RBE2 a envoyer
-C                  et preparation du buffer d envoi
-C                  (taille)
+C     first step - send to proc 0 array with number of 
+C                  local secondary nodes per RBE2 to send
+C                  and prepare buffer to send(size)
       NERBE2T = 0
       SNRBE2 = 0
       SBUFSIZ = 0
@@ -83,21 +82,20 @@ C                  (taille)
       PGLOBRBE2 = 0
 
       DO I=1,NRBE2
-          NGRBE = IRBE2(10,I)
-          SZLOCRBE2(NGRBE) = 0
-          NSN = IRBE2(5,I)
-          DO N=1,NSN
-           IF (WEIGHT(LRBE2(IRBE2(1,I)+N))==1)
-     .       SZLOCRBE2(NGRBE) = SZLOCRBE2(NGRBE)  + 1
-          ENDDO
-          SBUFSIZ = SBUFSIZ + SZLOCRBE2(NGRBE)
-
+        NGRBE = IRBE2(10,I)
+        SZLOCRBE2(NGRBE) = 0
+        NSN = IRBE2(5,I)
+        DO N=1,NSN
+         IF (WEIGHT(LRBE2(IRBE2(1,I)+N))==1)
+     .     SZLOCRBE2(NGRBE) = SZLOCRBE2(NGRBE)  + 1
+        ENDDO
+        SBUFSIZ = SBUFSIZ + SZLOCRBE2(NGRBE)
       ENDDO
 
-C Envoi vers le proc 0 du tableau des tailles
+C send to proc 0 array of sizes
 
       IF (ISPMD == 0) THEN
-C Proc zero reception des tailles
+C proc 0 receive sizes
         ALLOCATE(P0RECRBE2(NRBE2G,NSPMD))
         DO I=1,NRBE2G
            P0RECRBE2(I,1) = SZLOCRBE2(I)
@@ -110,7 +108,7 @@ C Proc zero reception des tailles
         ENDDO
 
       ELSE
-C Procs autres envoi
+C Other procs (send)
         MSGTYP = MSGOFF
         CALL MPI_SEND(SZLOCRBE2,NRBE2G,MPI_INTEGER,IT_SPMD(1),
      .                MSGTYP,MPI_COMM_WORLD,IERROR)
@@ -118,152 +116,149 @@ C Procs autres envoi
       ENDIF
 
 C --------------------------------------------------------------
-C Envoi vers le proc 0 des noeuds des RBE2 &   criture sur disque
+C send RBE2 nodes to proc 0
 C --------------------------------------------------------------
       IF (ISPMD /= 0) THEN
 C ------------------------
-C Procs autres que proc 0
+C Procs other than 0
 C ------------------------
-         ALLOCATE(SENDBUF(SBUFSIZ))
-         SNRBE2 = 0
-         DO I=1,NRBE2
-           NSN = IRBE2(5,I)
-           IAD = IRBE2(1,I)
-           DO N=1,NSN
-              SN = LRBE2(IAD+N)
-              IF (WEIGHT(SN) == 1 )THEN
-                SNRBE2 = SNRBE2+1
-                SENDBUF(SNRBE2)=ITAB(SN)
-              ENDIF
-           ENDDO
-         ENDDO
-         IF (SNRBE2 > 0)THEN
-           MSGTYP = MSGOFF2
-           CALL  MPI_SEND(SENDBUF,SNRBE2,MPI_INTEGER,IT_SPMD(1),MSGTYP,
-     *                  MPI_COMM_WORLD,IERROR)
-         ENDIF
-         DEALLOCATE(SENDBUF)
+        ALLOCATE(SENDBUF(SBUFSIZ))
+        SNRBE2 = 0
+        DO I=1,NRBE2
+          NSN = IRBE2(5,I)
+          IAD = IRBE2(1,I)
+          DO N=1,NSN
+             SN = LRBE2(IAD+N)
+             IF (WEIGHT(SN) == 1 )THEN
+               SNRBE2 = SNRBE2+1
+               SENDBUF(SNRBE2)=ITAB(SN)
+             ENDIF
+          ENDDO
+        ENDDO
+        IF (SNRBE2 > 0)THEN
+          MSGTYP = MSGOFF2
+          CALL  MPI_SEND(SENDBUF,SNRBE2,MPI_INTEGER,IT_SPMD(1),MSGTYP,
+     *                 MPI_COMM_WORLD,IERROR)
+        ENDIF
+        DEALLOCATE(SENDBUF)
 
-C Envoi des noeuds secnds
+C Send secondary nodes
         MAINNODS = 0
         DO I=1,NRBE2
           MN = IRBE2(3,I)
-	  IF(MN/=0)THEN
+          IF(MN/=0)THEN
             IF (WEIGHT(MN)==1)THEN
               NGRBE = IRBE2(10,I)
               MAINNODS(NGRBE)=ITAB(MN)
             ENDIF
-	  ENDIF
+          ENDIF
         ENDDO
         CALL SPMD_GLOB_ISUM9(MAINNODS,NRBE2G)
 
-C Envoi des Ids
+C Send Ids
         ID_RBE2 = 0
         DO I=1,NRBE2
           ID = IRBE2(2,I)
-	  IF(IRBE2(3,I)/=0)THEN
+          IF(IRBE2(3,I)/=0)THEN
             IF (WEIGHT(IRBE2(3,I))==1)THEN
               NGRBE = IRBE2(10,I)
               ID_RBE2(NGRBE)=ID
             ENDIF
-	  ENDIF
+          ENDIF
         ENDDO
         CALL SPMD_GLOB_ISUM9(ID_RBE2,NRBE2G)
-        
 
       ELSE
 C --------------------------------------------------------------------
 C PROC 0
 C --------------------------------------------------------------------
-C P0RBE2BUF tableau de reception (tableau de reception = LRBE2 Global)
-C IADRBE2 pointeurs vers P0RBE2BUF global
-         ALLOCATE(IADRBE2(NRBE2G+1))
-         ALLOCATE(P0RBE2BUF(NERBE2Y))
+C P0RBE2BUF receiving array (receiving array = Global LRBE2 )
+C IADRBE2 pointer to P0RBE2BUF global
+        ALLOCATE(IADRBE2(NRBE2G+1))
+        ALLOCATE(P0RBE2BUF(NERBE2Y))
 
-C preparation IADRBE2
-         IADRBE2(1)=0
-         DO I=1,NRBE2G
-           SNRBE2 = P0RECRBE2(I,1)
-           DO N=2,NSPMD
-             SNRBE2 = SNRBE2 + P0RECRBE2(I,N)
-           ENDDO
-           IADRBE2(I+1)=IADRBE2(I)+SNRBE2
-         ENDDO
+C prepare IADRBE2
+        IADRBE2(1)=0
+        DO I=1,NRBE2G
+          SNRBE2 = P0RECRBE2(I,1)
+          DO N=2,NSPMD
+            SNRBE2 = SNRBE2 + P0RECRBE2(I,N)
+          ENDDO
+          IADRBE2(I+1)=IADRBE2(I)+SNRBE2
+        ENDDO
 
-C preparation P0RECRBE2 pour le proc0
-         DO I=1,NRBE2G
-	    PGLOBRBE2(I)=IADRBE2(I)
-         ENDDO
-	 
-         DO I=1,NRBE2
-           NSN = IRBE2(5,I)
-           IAD = IRBE2(1,I)
-           NGRBE = IRBE2(10,I)
-           IADG = IADRBE2(NGRBE)
-           SNRBE2 = 0
-           DO N=1,NSN
-             SN = LRBE2( IAD+N )
-             IF (WEIGHT(SN) == 1 )THEN
-               SNRBE2 = SNRBE2+1
-               P0RBE2BUF(IADG + SNRBE2) = ITAB(SN)
-             ENDIF
-           ENDDO
-           PGLOBRBE2(NGRBE)=PGLOBRBE2(NGRBE) + SNRBE2
-         ENDDO
+C prepare P0RECRBE2 for proc0
+        DO I=1,NRBE2G
+          PGLOBRBE2(I)=IADRBE2(I)
+        ENDDO
+    
+        DO I=1,NRBE2
+          NSN = IRBE2(5,I)
+          IAD = IRBE2(1,I)
+          NGRBE = IRBE2(10,I)
+          IADG = IADRBE2(NGRBE)
+          SNRBE2 = 0
+          DO N=1,NSN
+            SN = LRBE2( IAD+N )
+            IF (WEIGHT(SN) == 1 )THEN
+              SNRBE2 = SNRBE2+1
+              P0RBE2BUF(IADG + SNRBE2) = ITAB(SN)
+            ENDIF
+          ENDDO
+          PGLOBRBE2(NGRBE)=PGLOBRBE2(NGRBE) + SNRBE2
+        ENDDO
 
-
-C Reception des RBE2 des autres procs
-         DO P=2,NSPMD
-C Taille du buffer de reception
+C Receive RBE2s of other procs
+        DO P=2,NSPMD
+C Size of receiving buffer
            SIZRBE2 = 0
-           DO I=1,NRBE2G
-             SIZRBE2 = SIZRBE2 + P0RECRBE2(I,P)
-           ENDDO
+          DO I=1,NRBE2G
+            SIZRBE2 = SIZRBE2 + P0RECRBE2(I,P)
+          ENDDO
 
-           IF (SIZRBE2 > 0) THEN
-             ALLOCATE(RECBUF(SIZRBE2))
-             MSGTYP = MSGOFF2 
-             CALL MPI_RECV(RECBUF,SIZRBE2,MPI_INTEGER,IT_SPMD(P),MSGTYP,
-     *                   MPI_COMM_WORLD,STATUS,IERROR)
+          IF (SIZRBE2 > 0) THEN
+            ALLOCATE(RECBUF(SIZRBE2))
+            MSGTYP = MSGOFF2 
+            CALL MPI_RECV(RECBUF,SIZRBE2,MPI_INTEGER,IT_SPMD(P),MSGTYP,
+     *                  MPI_COMM_WORLD,STATUS,IERROR)
 
-             PSNRBE2=0
-             DO I=1,NRBE2G
-               IADG = PGLOBRBE2(I)
-               DO N=1,P0RECRBE2(I,P)
-                 PSNRBE2 = PSNRBE2 + 1
-                 P0RBE2BUF(IADG + N) = RECBUF(PSNRBE2)
-               ENDDO
-               PGLOBRBE2(I) = PGLOBRBE2(I) + P0RECRBE2(I,P)
-             ENDDO
-             DEALLOCATE(RECBUF)
-           ENDIF
-         ENDDO
-C  Reception des Noeuds mains
-         MAINNODS=0
-         DO I=1,NRBE2
-           MN = IRBE2(3,I)
-           IF (WEIGHT(MN)==1) THEN
-             NGRBE = IRBE2(10,I)
-             MAINNODS(NGRBE)=ITAB(MN)
-           ENDIF        
-         ENDDO
-         CALL SPMD_GLOB_ISUM9(MAINNODS,NRBE2G)
+            PSNRBE2=0
+            DO I=1,NRBE2G
+              IADG = PGLOBRBE2(I)
+              DO N=1,P0RECRBE2(I,P)
+                PSNRBE2 = PSNRBE2 + 1
+                P0RBE2BUF(IADG + N) = RECBUF(PSNRBE2)
+              ENDDO
+              PGLOBRBE2(I) = PGLOBRBE2(I) + P0RECRBE2(I,P)
+            ENDDO
+            DEALLOCATE(RECBUF)
+          ENDIF
+        ENDDO
+C Receive main nodes
+        MAINNODS=0
+        DO I=1,NRBE2
+          MN = IRBE2(3,I)
+          IF (WEIGHT(MN)==1) THEN
+            NGRBE = IRBE2(10,I)
+            MAINNODS(NGRBE)=ITAB(MN)
+          ENDIF        
+        ENDDO
+        CALL SPMD_GLOB_ISUM9(MAINNODS,NRBE2G)
 
-C Reception des Ids
+C Receive Ids
         ID_RBE2 = 0
         DO I=1,NRBE2
           ID = IRBE2(2,I)
-	  IF(IRBE2(3,I)/=0)THEN
+          IF(IRBE2(3,I)/=0)THEN
             IF (WEIGHT(IRBE2(3,I))==1)THEN
               NGRBE = IRBE2(10,I)
               ID_RBE2(NGRBE)=ID
             ENDIF
-	  ENDIF
+          ENDIF
         ENDDO
         CALL SPMD_GLOB_ISUM9(ID_RBE2,NRBE2G)
 
-
-         CALL C_H3D_CREATE_RBE2_IMPI(ITAB,NRBE2G,IADRBE2,MAINNODS,P0RBE2BUF,ID_RBE2,
+        CALL C_H3D_CREATE_RBE2_IMPI(ITAB,NRBE2G,IADRBE2,MAINNODS,P0RBE2BUF,ID_RBE2,
      .                               COMPID_RBE2S)
 
         ENDIF

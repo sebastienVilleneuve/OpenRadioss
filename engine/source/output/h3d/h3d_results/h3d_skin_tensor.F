@@ -34,8 +34,8 @@ Chd|        INITBUF_MOD                   share/resol/initbuf.F
 Chd|====================================================================
       SUBROUTINE H3D_SKIN_TENSOR(
      .                   ELBUF_TAB,SKIN_TENSOR, IPARG   ,IXS     ,X     ,PM  ,
-     4                   IPARTS  ,IPM     ,IGEO    ,IXS10 ,IXS16 , IXS20  ,
-     5                   IS_WRITTEN_SKIN  ,H3D_PART,INFO1   ,KEYWORD,
+     4                   IPARTS  ,IGEO    ,IXS10 ,IXS16 , IXS20  ,
+     5                   IS_WRITTEN_SKIN  ,H3D_PART   ,KEYWORD,
      6                   IAD_ELEM        ,FR_ELEM     , WEIGHT   ,TAG_SKINS6)
 C-----------------------------------------------
 C   M o d u l e s
@@ -62,10 +62,10 @@ C     REAL
       my_real
      .   SKIN_TENSOR(3,*),PM(NPROPM,*), X(3,*)
       INTEGER IPARG(NPARG,*), 
-     .   IXS(NIXS,*),IPM(NPROPMI,*),IPARTS(*),
+     .   IXS(NIXS,*),IPARTS(*),
      .   IXS10(6,*) ,IXS16(8,*) ,IXS20(12,*) ,
      .   IGEO(NPROPGI,*),IS_WRITTEN_SKIN(*),
-     .   H3D_PART(*),INFO1,TAG_SKINS6(*),IAD_ELEM(2,*),FR_ELEM(*),WEIGHT(*)
+     .   H3D_PART(*),TAG_SKINS6(*),IAD_ELEM(2,*),FR_ELEM(*),WEIGHT(*)
       TYPE (ELBUF_STRUCT_), DIMENSION(NGROUP), TARGET :: ELBUF_TAB
       CHARACTER*ncharline KEYWORD
 C-----------------------------------------------
@@ -167,10 +167,10 @@ C-------- grp skin_inf first
                EVAR(3,I) = LBUF%SIG(JJ(4) + I)
              ENDDO
              IF(IVISC > 0) THEN
-           	DO I=1,NEL
+              DO I=1,NEL
                   EVAR(1:2,I) = EVAR(1:2,I) + LBUF%VISC(JJ(1:2) + I)
                   EVAR(3,I) = EVAR(3,I) + LBUF%VISC(JJ(4) + I)
-           	ENDDO
+              ENDDO
              ENDIF
            ELSE ! 14,16
              DO IR=1,NPTR
@@ -229,10 +229,10 @@ C-------- grp skin_up
                EVAR(3,I) = LBUF%SIG(JJ(4) + I)
              ENDDO
              IF(IVISC > 0) THEN
-           	DO I=1,NEL
+              DO I=1,NEL
                   EVAR(1:2,I) = EVAR(1:2,I) + LBUF%VISC(JJ(1:2) + I)
                   EVAR(3,I)   = EVAR(3,I) + LBUF%VISC(JJ(4) + I)
-           	ENDDO
+              ENDDO
              ENDIF
            ELSE ! 14,16
              DO IR=1,NPTR
@@ -295,15 +295,15 @@ C-------- grp skin_inf first
               IS = 1
               LBUF => ELBUF_TAB(NG)%BUFLY(ILAY)%LBUF(IR,IS,IT)
                IF (MLWI == 12 .OR. MLWI == 14) THEN
-                 DO I=1,NEL						   
+                 DO I=1,NEL                     
                   EVAR(1:2,I) = LBUF%EPE(JJ(1:2) + I)       
                   EVAR(3,I)   = HALF*LBUF%EPE(JJ(4) + I)
-                 ENDDO						       
+                 ENDDO                         
                ELSEIF (MLWI /= 49 ) THEN                 
-                 DO I=1,NEL						   
+                 DO I=1,NEL                     
                   EVAR(1:2,I) = LBUF%STRA(JJ(1:2) + I)       
                   EVAR(3,I)   = HALF*LBUF%STRA(JJ(4) + I)
-                 ENDDO						       
+                 ENDDO                         
                ELSE
                 IS_WRITTEN_TENSOR(1:NEL) = 0
                END IF               
@@ -313,15 +313,15 @@ C------to see if need rotate EVARL
                DO IS=1,NPTS
                   LBUF => ELBUF_TAB(NG)%BUFLY(ILAY)%LBUF(IR,IS,IT)         
                   IF (MLWI == 12 .OR. MLWI == 14) THEN
-                    DO I=1,NEL						   
+                    DO I=1,NEL                     
                      EVAR(1:2,I) = EVAR(1:2,I)+LBUF%EPE(JJ(1:2) + I)       
                      EVAR(3,I)   = EVAR(3,I)+HALF*LBUF%EPE(JJ(4) + I)
-                    ENDDO						       
+                    ENDDO                         
                   ELSEIF (MLWI /= 49 ) THEN                 
-                    DO I=1,NEL						   
+                    DO I=1,NEL                     
                      EVAR(1:2,I) = EVAR(1:2,I)+LBUF%STRA(JJ(1:2) + I)       
                      EVAR(3,I)   = EVAR(3,I)+ HALF*LBUF%STRA(JJ(4) + I)
-                    ENDDO						       
+                    ENDDO                         
                   ELSE
                    IS_WRITTEN_TENSOR(1:NEL) = 0
                   END IF               
@@ -369,15 +369,15 @@ C-------- grp skin_sup
               IS = 1
               LBUF => ELBUF_TAB(NG)%BUFLY(ILAY)%LBUF(IR,IS,IT)
                IF (MLWI == 12 .OR. MLWI == 14) THEN
-                 DO I=1,NEL						   
+                 DO I=1,NEL                     
                   EVAR(1:2,I) = LBUF%EPE(JJ(1:2) + I)       
                   EVAR(3,I)   = HALF*LBUF%EPE(JJ(4) + I)
-                 ENDDO						       
+                 ENDDO                         
                ELSEIF (MLWI /= 49 ) THEN                 
-                 DO I=1,NEL						   
+                 DO I=1,NEL                     
                   EVAR(1:2,I) = LBUF%STRA(JJ(1:2) + I)       
                   EVAR(3,I)   = HALF*LBUF%STRA(JJ(4) + I)
-                 ENDDO						       
+                 ENDDO                         
                ELSE
                 IS_WRITTEN_TENSOR(1:NEL) = 0
                END IF               
@@ -387,15 +387,15 @@ C------to see if need rotate EVARL
                DO IS=1,NPTS
                   LBUF => ELBUF_TAB(NG)%BUFLY(ILAY)%LBUF(IR,IS,IT)         
                   IF (MLWI == 12 .OR. MLWI == 14) THEN
-                    DO I=1,NEL						   
+                    DO I=1,NEL                     
                      EVAR(1:2,I) = EVAR(1:2,I)+LBUF%EPE(JJ(1:2) + I)       
                      EVAR(3,I)   = EVAR(3,I)+HALF*LBUF%EPE(JJ(4) + I)
-                    ENDDO						       
+                    ENDDO                         
                   ELSEIF (MLWI /= 49 ) THEN                 
-                    DO I=1,NEL						   
+                    DO I=1,NEL                     
                      EVAR(1:2,I) = EVAR(1:2,I)+LBUF%STRA(JJ(1:2) + I)       
                      EVAR(3,I)   = EVAR(3,I)+ HALF*LBUF%STRA(JJ(4) + I)
-                    ENDDO						       
+                    ENDDO                         
                   ELSE
                    IS_WRITTEN_TENSOR(1:NEL) = 0
                   END IF               
@@ -436,8 +436,8 @@ C------for solid elements
        IF (NUMSKIN> NSKIN)       
      .  CALL H3D_SOL_SKIN_TENSOR(
      .                   ELBUF_TAB,SKIN_TENSOR, IPARG   ,IXS     ,X     ,PM  ,
-     4                   IPARTS  ,IPM     ,IGEO    ,IXS10 ,IXS16 , IXS20  ,
-     5                   IS_WRITTEN_SKIN  ,H3D_PART,INFO1   ,KEYWORD ,NSKIN ,
+     4                   IPARTS  ,IXS10 ,IXS16 , IXS20  ,
+     5                   IS_WRITTEN_SKIN  ,H3D_PART,KEYWORD ,NSKIN ,
      6                   IAD_ELEM        ,FR_ELEM     , WEIGHT   ,TAG_SKINS6)
 C-----------
       RETURN

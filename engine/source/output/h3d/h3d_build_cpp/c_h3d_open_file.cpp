@@ -20,14 +20,12 @@
 //Copyright>    As an alternative to this open-source version, Altair also offers Altair Radioss
 //Copyright>    software under a commercial license.  Contact Altair to discuss further if the
 //Copyright>    commercial version may interest you: https://www.altair.com/radioss/.
-//    
+//
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
 #include <fcntl.h>
-
-
 
 #ifdef _WIN32
 /* Windows includes */
@@ -36,7 +34,6 @@
 #include <io.h>
 #include <sys\types.h>
 #include <sys/stat.h>
-
 
 #elif 1
 
@@ -66,507 +63,546 @@
 #define my_real double
 #endif
 
-   H3DFileInfo* h3d_file;
-   bool rc;
-   H3D_ID subcase_id;
+H3DFileInfo *h3d_file;
+bool rc;
+H3D_ID subcase_id;
 
-   unsigned int   model_count;
-   bool model_tabular;
-   H3D_TRIBOOL model_adaptive ;
-   H3D_ID model_id;
+unsigned int model_count;
+bool model_tabular;
+H3D_TRIBOOL model_adaptive;
+H3D_ID model_id;
 
-   H3D_ID assm_poolname_id;
+H3D_ID assm_poolname_id;
 
+unsigned int assm_count;
+H3D_ID assm_id;
+H3D_ID model_as_parent;
 
-   unsigned int assm_count;
-   H3D_ID assm_id;
-   H3D_ID model_as_parent;
+H3D_ID assm_parent; //assm_parent = 1
 
-   H3D_ID assm_parent;   // assm_parent = 1
+H3D_ID comp_poolname_id;
+H3D_ID node_poolname_id;
+H3D_ID sphnode_poolname_id;
 
-   H3D_ID comp_poolname_id;
-   H3D_ID node_poolname_id;
-   H3D_ID sphnode_poolname_id;
+unsigned int comp_count;
+H3D_ID comp_id;
+H3D_ID comp_parent_id; //comp_parent_id = assm 1
 
-   unsigned int comp_count;
-   H3D_ID comp_id;
-   H3D_ID comp_parent_id;      // comp_parent_id = assm 1
+H3D_SIM_IDX sim_idx;
+H3D_ID rbody_poolname_id;
+H3D_ID rbe2_poolname_id;
+H3D_ID rbe3_poolname_id;
+H3D_ID rwall_poolname_id;
+H3D_ID spring_poolname_id;
+H3D_ID beam_poolname_id;
+H3D_ID truss_poolname_id;
+H3D_ID elem1D_poolname_id;
+H3D_ID elem2D_poolname_id;
+H3D_ID sh4n_poolname_id;
+H3D_ID sh3n_poolname_id;
+H3D_ID shell_poolname_id;
+H3D_ID quad_poolname_id;
+H3D_ID skin_poolname_id;
+H3D_ID solid4n_poolname_id;
+H3D_ID solid10n_poolname_id;
+H3D_ID solid5n_poolname_id;
+H3D_ID solid6n_poolname_id;
+H3D_ID solid8n_poolname_id;
+H3D_ID solid16n_poolname_id;
+H3D_ID solid20n_poolname_id;
+H3D_ID rigid_poolname_id;
+H3D_ID solid_poolname_id;
+H3D_ID onedelem_poolname_id;
+H3D_ID sph_poolname_id;
+H3D_ID sphcell_poolname_id;
 
-   H3D_SIM_IDX sim_idx;
-   H3D_ID rbody_poolname_id;
-   H3D_ID rbe2_poolname_id;
-   H3D_ID rbe3_poolname_id;
-   H3D_ID rwall_poolname_id;
-   H3D_ID spring_poolname_id;
-   H3D_ID beam_poolname_id;
-   H3D_ID truss_poolname_id;
-   H3D_ID elem1D_poolname_id;
-   H3D_ID elem2D_poolname_id;
-   H3D_ID sh4n_poolname_id;
-   H3D_ID sh3n_poolname_id;
-   H3D_ID shell_poolname_id;
-   H3D_ID quad_poolname_id;
-   H3D_ID skin_poolname_id;
-   H3D_ID solid4n_poolname_id;
-   H3D_ID solid10n_poolname_id;
-   H3D_ID solid5n_poolname_id;
-   H3D_ID solid6n_poolname_id;
-   H3D_ID solid8n_poolname_id;
-   H3D_ID solid16n_poolname_id;
-   H3D_ID solid20n_poolname_id;
-   H3D_ID rigid_poolname_id;
-   H3D_ID solid_poolname_id;
-   H3D_ID onedelem_poolname_id;
-   H3D_ID sph_poolname_id;
-   H3D_ID sphcell_poolname_id;
+char edata_type[50];
+H3D_ID dt_id;
+unsigned int pool_count;
+unsigned int layer_count;
+bool has_corners;
+H3D_TENSOR_TYPE tensor_type; //unused
+float poisson;               //default & unused
+unsigned int dt_count;
+H3D_ID *layername_ids;
 
-   char edata_type[50];
-   H3D_ID dt_id;
-   unsigned int pool_count;
-   unsigned int layer_count;
-   bool has_corners;
-   H3D_TENSOR_TYPE tensor_type; // unused
-   float poisson;		// default & unused
-   unsigned int dt_count;
-   H3D_ID* layername_ids;
-
-#define _FCALL 
-extern "C" 
+#define _FCALL
+extern "C"
 /*=================================================================*/
 {
 
+    /*=================================================================*/
+    /*        REPORTERRORMESSAGE                                       */
+    /*=================================================================*/
 
-/*=================================================================*/
-/*        REPORTERRORMESSAGE                                       */
-/*=================================================================*/
-
-void ReportErrorMsg(H3DFileInfo* h3d_file, const char* error)
-{
-    FILE* errorFile = (FILE*)h3d_file->client_data1;
-    if( !errorFile ) {
+    void ReportErrorMsg(H3DFileInfo *h3d_file, const char *error)
+    {
+        FILE *errorFile = (FILE *)h3d_file->client_data1;
+        if (!errorFile)
+        {
 #ifdef _WIN64
-        fopen_s(&errorFile,"export_error_messages", "a");
+            fopen_s(&errorFile, "export_error_messages", "a");
 #else
-        errorFile = fopen("export_error_messages", "a");
+            errorFile = fopen("export_error_messages", "a");
 #endif
-        h3d_file->client_data1 = (void*)errorFile;
+            h3d_file->client_data1 = (void *)errorFile;
+        }
+
+        fprintf(errorFile, "%s\n", error);
     }
+    /*=================================================================*/
+    /*        OPEN_H3D_FILE                                            */
+    /*=================================================================*/
+    void c_h3d_open_file_(char *name, int *size, my_real *percentage_error, int *comp_level, char *RADVERS, int *LEN_RADVERS,
+                          my_real *FAC_M, my_real *FAC_L, my_real *FAC_T)
+    {
 
-    fprintf(errorFile, "%s\n", error);
+        rc = true;
+        subcase_id = 1;
 
-}
-/*=================================================================*/
-/*        OPEN_H3D_FILE                                            */
-/*=================================================================*/
-void c_h3d_open_file_(char *name, int *size, my_real *percentage_error, int *comp_level, char *RADVERS, int *LEN_RADVERS,
-                      my_real *FAC_M, my_real *FAC_L, my_real *FAC_T)
-{
+        model_count = 1;
+        model_tabular = false;
+        model_adaptive = H3D_BOOL_FALSE;
+        model_id = 1;
 
-    rc = true;
-    subcase_id = 1;
+        assm_poolname_id = H3D_NULL_ID;
 
-    model_count = 1;
-    model_tabular = false;
-    model_adaptive = H3D_BOOL_FALSE;
-    model_id = 1;
+        assm_count = 2;
+        assm_id = 1;
+        model_as_parent = H3D_NULL_ID;
 
-    assm_poolname_id = H3D_NULL_ID;
+        assm_parent = 0; //assm_parent = 1
 
+        comp_poolname_id = H3D_NULL_ID;
+        node_poolname_id = H3D_NULL_ID;
+        sphnode_poolname_id = H3D_NULL_ID;
 
-    assm_count = 2;
-    assm_id = 1;
-    model_as_parent = H3D_NULL_ID;
+        comp_count = 1;
+        comp_id = 1;
+        comp_parent_id = 1; //comp_parent_id = assm 1
 
-    assm_parent = 0;   // assm_parent = 1
+        rbody_poolname_id = H3D_NULL_ID;
+        rbe2_poolname_id = H3D_NULL_ID;
+        rbe3_poolname_id = H3D_NULL_ID;
+        rwall_poolname_id = H3D_NULL_ID;
+        spring_poolname_id = H3D_NULL_ID;
+        beam_poolname_id = H3D_NULL_ID;
+        truss_poolname_id = H3D_NULL_ID;
+        elem1D_poolname_id = H3D_NULL_ID;
+        elem2D_poolname_id = H3D_NULL_ID;
+        sh4n_poolname_id = H3D_NULL_ID;
+        sh3n_poolname_id = H3D_NULL_ID;
+        shell_poolname_id = H3D_NULL_ID;
+        quad_poolname_id = H3D_NULL_ID;
+        skin_poolname_id = H3D_NULL_ID;
+        solid4n_poolname_id = H3D_NULL_ID;
+        solid10n_poolname_id = H3D_NULL_ID;
+        solid5n_poolname_id = H3D_NULL_ID;
+        solid6n_poolname_id = H3D_NULL_ID;
+        solid8n_poolname_id = H3D_NULL_ID;
+        solid16n_poolname_id = H3D_NULL_ID;
+        solid20n_poolname_id = H3D_NULL_ID;
+        rigid_poolname_id = H3D_NULL_ID;
+        solid_poolname_id = H3D_NULL_ID;
+        onedelem_poolname_id = H3D_NULL_ID;
+        sph_poolname_id = H3D_NULL_ID;
+        sphcell_poolname_id = H3D_NULL_ID;
 
-    comp_poolname_id = H3D_NULL_ID;
-    node_poolname_id = H3D_NULL_ID;
-    sphnode_poolname_id = H3D_NULL_ID;
+        dt_id = 1;
+        pool_count = 0;
+        layer_count = 0;
+        has_corners = false;
+        poisson = 0.3f; //default & unused
+        dt_count = 2;
 
-    comp_count = 1;
-    comp_id = 1;
-    comp_parent_id = 1;      // comp_parent_id = assm 1
+        char *cname;
+        int cname_len;
+        int i;
 
-    rbody_poolname_id = H3D_NULL_ID;
-    rbe2_poolname_id = H3D_NULL_ID;
-    rbe3_poolname_id = H3D_NULL_ID;
-    rwall_poolname_id = H3D_NULL_ID;
-    spring_poolname_id = H3D_NULL_ID;
-    beam_poolname_id = H3D_NULL_ID;
-    truss_poolname_id = H3D_NULL_ID;
-    elem1D_poolname_id = H3D_NULL_ID;
-    elem2D_poolname_id = H3D_NULL_ID;
-    sh4n_poolname_id = H3D_NULL_ID;
-    sh3n_poolname_id = H3D_NULL_ID;
-    shell_poolname_id = H3D_NULL_ID;
-    quad_poolname_id = H3D_NULL_ID;
-    skin_poolname_id = H3D_NULL_ID;
-    solid4n_poolname_id = H3D_NULL_ID;
-    solid10n_poolname_id = H3D_NULL_ID;
-    solid5n_poolname_id = H3D_NULL_ID;
-    solid6n_poolname_id = H3D_NULL_ID;
-    solid8n_poolname_id = H3D_NULL_ID;
-    solid16n_poolname_id = H3D_NULL_ID;
-    solid20n_poolname_id = H3D_NULL_ID;
-    rigid_poolname_id = H3D_NULL_ID;
-    solid_poolname_id = H3D_NULL_ID;
-    onedelem_poolname_id = H3D_NULL_ID;
-    sph_poolname_id = H3D_NULL_ID;
-    sphcell_poolname_id = H3D_NULL_ID;
+        cname_len = *size + 1;
+        cname = (char *)malloc(sizeof(char) * cname_len);
+        for (i = 0; i < *size; i++)
+            cname[i] = name[i];
+        cname[*size] = '\0';
+        //
+        // open h3d file
+        //
+        h3d_file = Hyper3DExportOpen(cname, H3D_SINGLEFILE, NULL, ReportErrorMsg);
 
-    dt_id = 1;
-    pool_count = 0;
-    layer_count = 0;
-    has_corners = false;
-    poisson = 0.3f;		// default & unused
-    dt_count = 2;
+        h3d_file->quantize_error = *percentage_error / 100.f;
+        h3d_file->compression_level = *comp_level;
 
-    char *cname;
-    int cname_len;
-    int i;
-    
-    cname_len = *size + 1;
-    cname=(char*) malloc(sizeof(char)*cname_len);
-    for(i=0;i<*size;i++)  cname[i] = name[i];
-    cname[*size]='\0'; 
-//
-//  open h3d file
-//
-    h3d_file = Hyper3DExportOpen(cname, H3D_SINGLEFILE, NULL, ReportErrorMsg);
-
-    h3d_file -> quantize_error = *percentage_error / 100.f ;
-    h3d_file -> compression_level = *comp_level ;
-
-    // define pool names that will be used
-    char* creating_application;
-    creating_application=(char*) malloc(sizeof(char)*(*LEN_RADVERS+1));
+        //define pool names that will be used
+        char *creating_application;
+        creating_application = (char *)malloc(sizeof(char) * (*LEN_RADVERS + 1));
 #ifdef _WIN64
-    strncpy_s(creating_application, *LEN_RADVERS+1, RADVERS, *LEN_RADVERS);
+        strncpy_s(creating_application, *LEN_RADVERS + 1, RADVERS, *LEN_RADVERS);
 #else
-    strncpy(creating_application, RADVERS, *LEN_RADVERS);
+        strncpy(creating_application, RADVERS, *LEN_RADVERS);
 #endif
-    creating_application[*LEN_RADVERS] = '\0';
-//
-    char* solver_name;
-    solver_name=(char*) malloc(sizeof(char)*(*LEN_RADVERS+1));
+        creating_application[*LEN_RADVERS] = '\0';
+        //
+        char *solver_name;
+        solver_name = (char *)malloc(sizeof(char) * (*LEN_RADVERS + 1));
 #ifdef _WIN64
-    strncpy_s(solver_name, *LEN_RADVERS+1 , RADVERS, *LEN_RADVERS);
+        strncpy_s(solver_name, *LEN_RADVERS + 1, RADVERS, *LEN_RADVERS);
 #else
-    strncpy(solver_name, RADVERS, *LEN_RADVERS);
+        strncpy(solver_name, RADVERS, *LEN_RADVERS);
 #endif
-    solver_name[*LEN_RADVERS] = '\0';
-//
-    char   file_creation_date[] = __DATE__;
-    char   original_data_file[] = " ";
-    char   original_result_file[] = " ";
+        solver_name[*LEN_RADVERS] = '\0';
+        //
+        char file_creation_date[] = __DATE__;
+        char original_data_file[] = " ";
+        char original_result_file[] = " ";
 
-    char file_comment[100];
-    sprintf(file_comment, "UNIT  MASS=%g LENGTH=%g TIME=%g", *FAC_M,*FAC_L,*FAC_T);
+        char file_comment[100];
+        sprintf(file_comment, "UNIT  MASS=%g LENGTH=%g TIME=%g", *FAC_M, *FAC_L, *FAC_T);
 
-    try {
+        try
+        {
 
+            //create Model block
+            rc = Hyper3DModelBegin(h3d_file, model_count);
+            if (!rc)
+                throw rc;
 
-        // create Model block
-        rc = Hyper3DModelBegin(h3d_file, model_count);
-        if( !rc ) throw rc;
-		
-		
+            rc = Hyper3DModelWrite(h3d_file, cname, model_id,
+                                   model_tabular, model_adaptive);
+            if (!rc)
+                throw rc;
 
+            rc = Hyper3DModelEnd(h3d_file);
+            if (!rc)
+                throw rc;
 
-        rc = Hyper3DModelWrite(h3d_file, cname, model_id, 
-                                model_tabular, model_adaptive);
-        if( !rc ) throw rc;
+            //SetModel must be called!
+            rc = Hyper3DSetModelToWrite(h3d_file, model_id, model_tabular);
+            if (!rc)
+                throw rc;
 
-		
+            //create File Info block
+            rc = Hyper3DFileInfoBegin(h3d_file, creating_application, file_creation_date, solver_name);
+            if (!rc)
+                throw rc;
+            //       rc = Hyper3DFileInfoAddModelFile(h3d_file, original_data_file);
+            //       if( !rc ) throw rc;
+            //       rc = Hyper3DFileInfoAddResultFile(h3d_file, original_result_file);
+            //       if( !rc ) throw rc;
+            rc = Hyper3DFileInfoAddComment(h3d_file, file_comment);
+            if (!rc)
+                throw rc;
+            rc = Hyper3DFileInfoEnd(h3d_file);
+            if (!rc)
+                throw rc;
 
-        rc = Hyper3DModelEnd(h3d_file);
-        if( !rc ) throw rc;
+        } //end of try
 
-		
-
-        // SetModel must be called!
-        rc = Hyper3DSetModelToWrite(h3d_file, model_id, model_tabular);
-        if( !rc ) throw rc;
-
-        // create File Info block
-        rc = Hyper3DFileInfoBegin(h3d_file, creating_application, file_creation_date, solver_name);
-        if( !rc ) throw rc;
-//        rc = Hyper3DFileInfoAddModelFile(h3d_file, original_data_file);
-//        if( !rc ) throw rc;
-//        rc = Hyper3DFileInfoAddResultFile(h3d_file, original_result_file);
-//        if( !rc ) throw rc;
-        rc = Hyper3DFileInfoAddComment(h3d_file, file_comment);
-        if( !rc ) throw rc;
-        rc = Hyper3DFileInfoEnd(h3d_file);
-        if( !rc ) throw rc;
-
-
-
-    } // end of try
-
-    catch(...) {
-        Hyper3DExportClearError(h3d_file);
+        catch (...)
+        {
+            Hyper3DExportClearError(h3d_file);
+        }
     }
 
-}
-
-void _FCALL C_H3D_OPEN_FILE(char *name, int *size, my_real *percentage_error, int *comp_level, char *RADVERS, int *LEN_RADVERS,
-                      my_real *FAC_M, my_real *FAC_L, my_real *FAC_T)
-{c_h3d_open_file_ (name,size,percentage_error,comp_level,RADVERS,LEN_RADVERS,FAC_M,FAC_L,FAC_T);}
-
-void c_h3d_open_file__ (char *name, int *size, my_real *percentage_error, int *comp_level, char *RADVERS, int *LEN_RADVERS,
-                      my_real *FAC_M, my_real *FAC_L, my_real *FAC_T)
-{c_h3d_open_file_ (name,size,percentage_error,comp_level,RADVERS,LEN_RADVERS,FAC_M,FAC_L,FAC_T);}
-
-void c_h3d_open_file (char *name, int *size, my_real *percentage_error, int *comp_level, char *RADVERS, int *LEN_RADVERS,
-                      my_real *FAC_M, my_real *FAC_L, my_real *FAC_T)
-{c_h3d_open_file_ (name,size,percentage_error,comp_level,RADVERS,LEN_RADVERS,FAC_M,FAC_L,FAC_T);}
-
-
-/*=================================================================*/
-/*        REOPEN_H3D_FILE                                            */
-/*=================================================================*/
-void c_h3d_reopen_file_(char *name, int *size, my_real *percentage_error, int *comp_level)
-{
-    
-    rc = true;
-    subcase_id = 1;
-
-    model_count = 1;
-    model_tabular = false;
-    model_adaptive = H3D_BOOL_FALSE;
-    model_id = 1;
-
-    assm_poolname_id = H3D_NULL_ID;
-
-
-    assm_count = 2;
-    assm_id = 1;
-    model_as_parent = H3D_NULL_ID;
-
-    assm_parent = 0;   // assm_parent = 1
-
-    comp_poolname_id = H3D_NULL_ID;
-    node_poolname_id = H3D_NULL_ID;
-
-    comp_count = 1;
-    comp_id = 1;
-    comp_parent_id = 1;      // comp_parent_id = assm 1
-
-    rbody_poolname_id = H3D_NULL_ID;
-    rbe2_poolname_id = H3D_NULL_ID;
-    rbe3_poolname_id = H3D_NULL_ID;
-    rwall_poolname_id = H3D_NULL_ID;
-    spring_poolname_id = H3D_NULL_ID;
-    beam_poolname_id = H3D_NULL_ID;
-    truss_poolname_id= H3D_NULL_ID;
-    elem1D_poolname_id = H3D_NULL_ID;
-    elem2D_poolname_id = H3D_NULL_ID;
-    sh4n_poolname_id = H3D_NULL_ID;
-    sh3n_poolname_id = H3D_NULL_ID;
-    shell_poolname_id = H3D_NULL_ID;
-    quad_poolname_id = H3D_NULL_ID;
-    skin_poolname_id = H3D_NULL_ID;
-    solid4n_poolname_id = H3D_NULL_ID;
-    solid10n_poolname_id = H3D_NULL_ID;
-    solid5n_poolname_id = H3D_NULL_ID;
-    solid6n_poolname_id = H3D_NULL_ID;
-    solid8n_poolname_id = H3D_NULL_ID;
-    solid16n_poolname_id = H3D_NULL_ID;
-    solid20n_poolname_id = H3D_NULL_ID;
-    rigid_poolname_id = H3D_NULL_ID;
-    solid_poolname_id = H3D_NULL_ID;
-    onedelem_poolname_id = H3D_NULL_ID;
-    sph_poolname_id = H3D_NULL_ID;
-    sphcell_poolname_id = H3D_NULL_ID;
-    sphnode_poolname_id = H3D_NULL_ID;
-
-    dt_id = 2;
-    pool_count = 0;
-    layer_count = 0;
-    has_corners = false;
-    poisson = 0.3f;		// default & unused
-    dt_count = 2;
-
-    char *cname;
-    int cname_len;
-    int i;
-    cname_len = *size + 1;
-    cname=(char*) malloc(sizeof(char)*cname_len);
-    for(i=0;i<*size;i++)  cname[i] = name[i];
-    cname[*size]='\0'; 
-//
-//
-//  open h3d file
-//
-    h3d_file = Hyper3DExportOpen(cname,H3D_SINGLEFILE|H3D_APPEND, NULL, ReportErrorMsg);
-
-    try {
-        // SetModel must be called!
-        rc = Hyper3DSetModelToWrite(h3d_file, model_id, model_tabular);
-        if( !rc ) throw rc;
-
-
-        rc = Hyper3DAddString(h3d_file, H3D_DEFAULT_COMPPOOL, &comp_poolname_id);
-        if( !rc ) throw rc;
-
-        rc = Hyper3DAddString(h3d_file, H3D_DEFAULT_NODEPOOL, &node_poolname_id);
-        if( !rc ) throw rc;
-
-        rc = Hyper3DAddString(h3d_file, H3D_DEFAULT_ELEMPOOL1D, &elem1D_poolname_id);
-        if( !rc ) throw rc;
-
-        char SHELLPOOL[] = "Shell";
-        rc = Hyper3DAddString(h3d_file, SHELLPOOL, &shell_poolname_id);
-        if( !rc ) throw rc;
-
-        char SOLIDPOOL[] = "Solid";
-        rc = Hyper3DAddString(h3d_file, SOLIDPOOL, &solid_poolname_id);
-        if( !rc ) throw rc;
-
-        char QUADPOOL[] = "QUAD";
-        rc = Hyper3DAddString(h3d_file, QUADPOOL, &quad_poolname_id);
-        if( !rc ) throw rc;
-
-        char SKINPOOL[] = "SKIN";
-        rc = Hyper3DAddString(h3d_file, SKINPOOL, &skin_poolname_id);
-        if( !rc ) throw rc;
-
-        char ONEDELEMPOOL[] = "1D";
-        rc = Hyper3DAddString(h3d_file, ONEDELEMPOOL, &onedelem_poolname_id);
-        if( !rc ) throw rc;
-
-        char RIGIDPOOL[] = "Rigid";
-        rc = Hyper3DAddString(h3d_file, RIGIDPOOL, &rigid_poolname_id);
-        if( !rc ) throw rc;
-
-        char SPHCELLPOOL[] = "SPHCELL";
-        rc = Hyper3DAddString(h3d_file, SPHCELLPOOL, &sphcell_poolname_id);
-        if( !rc ) throw rc;
-
-        char SPHNODEPOOL[] = "SPHNodes";
-        rc = Hyper3DAddString(h3d_file, SPHNODEPOOL, &sphnode_poolname_id);
-        if( !rc ) throw rc;
-
-        char SH3NPOOL[] = "SH3N";
-        rc = Hyper3DAddString(h3d_file, SH3NPOOL, &sh3n_poolname_id);
-        if( !rc ) throw rc;
-
-        char SH4NPOOL[] = "SH4N";
-        rc = Hyper3DAddString(h3d_file, SH4NPOOL, &sh4n_poolname_id);
-        if( !rc ) throw rc;
-
-        char SPRINGPOOL[] = "SPRING";
-        rc = Hyper3DAddString(h3d_file, SPRINGPOOL, &spring_poolname_id);
-        if( !rc ) throw rc;
-
-        char TRUSSPOOL[] = "TRUSS";
-        rc = Hyper3DAddString(h3d_file, TRUSSPOOL, &truss_poolname_id);
-        if( !rc ) throw rc;
-
-        char BEAMPOOL[] = "BEAM";
-        rc = Hyper3DAddString(h3d_file, BEAMPOOL, &beam_poolname_id);
-        if( !rc ) throw rc;
-
-        char SOLID4NPOOL[] = "TETRA4";
-        rc = Hyper3DAddString(h3d_file, SOLID4NPOOL, &solid4n_poolname_id);
-        if( !rc ) throw rc;
-
-        char SOLID10NPOOL[] = "TETRA10";
-        rc = Hyper3DAddString(h3d_file, SOLID10NPOOL, &solid10n_poolname_id);
-        if( !rc ) throw rc;
-
-        char SOLID5NPOOL[] = "PENTA5";
-        rc = Hyper3DAddString(h3d_file, SOLID5NPOOL, &solid5n_poolname_id);
-        if( !rc ) throw rc;
-
-        char SOLID6NPOOL[] = "PENTA6";
-        rc = Hyper3DAddString(h3d_file, SOLID6NPOOL, &solid6n_poolname_id);
-        if( !rc ) throw rc;
-
-        char SOLID8NPOOL[] = "BRICK";
-        rc = Hyper3DAddString(h3d_file, SOLID8NPOOL, &solid8n_poolname_id);
-        if( !rc ) throw rc;
-
-        char SOLID16NPOOL[] = "BRICK16";
-        rc = Hyper3DAddString(h3d_file, SOLID16NPOOL, &solid16n_poolname_id);
-        if( !rc ) throw rc;
-
-        char SOLID20NPOOL[] = "BRICK20";
-        rc = Hyper3DAddString(h3d_file, SOLID20NPOOL, &solid20n_poolname_id);
-        if( !rc ) throw rc;
-
-        char SPHPOOL[] = "Sph";
-        rc = Hyper3DAddString(h3d_file, SPHPOOL, &sph_poolname_id);
-        if( !rc ) throw rc;
-
-        char RBODYPOOL[] = "Rbody";
-        rc = Hyper3DAddString(h3d_file, RBODYPOOL, &rbody_poolname_id);
-        if( !rc ) throw rc;
-
-        char RBE2POOL[] = "Rbe2";
-        rc = Hyper3DAddString(h3d_file, RBE2POOL, &rbe2_poolname_id);
-        if( !rc ) throw rc;
-
-        char RBE3POOL[] = "Rbe3";
-        rc = Hyper3DAddString(h3d_file, RBE3POOL, &rbe3_poolname_id);
-        if( !rc ) throw rc;
-
-        char RWALLPOOL[] = "Rwall";
-        rc = Hyper3DAddString(h3d_file, RWALLPOOL, &rwall_poolname_id);
-        if( !rc ) throw rc;
-
-
-
-    } // end of try
-
-    catch(...) {
-        Hyper3DExportClearError(h3d_file);
+    void _FCALL C_H3D_OPEN_FILE(char *name, int *size, my_real *percentage_error, int *comp_level, char *RADVERS, int *LEN_RADVERS,
+                                my_real *FAC_M, my_real *FAC_L, my_real *FAC_T)
+    {
+        c_h3d_open_file_(name, size, percentage_error, comp_level, RADVERS, LEN_RADVERS, FAC_M, FAC_L, FAC_T);
     }
 
-}
-
-void _FCALL C_H3D_REOPEN_FILE(char *name, int *size, my_real *percentage_error, int *comp_level)
-{c_h3d_reopen_file_ (name,size,percentage_error,comp_level);}
-
-void c_h3d_reopen_file__ (char *name, int *size, my_real *percentage_error, int *comp_level)
-{c_h3d_reopen_file_ (name,size,percentage_error,comp_level);}
-
-void c_h3d_reopen_file (char *name, int *size, my_real *percentage_error, int *comp_level)
-{c_h3d_reopen_file_ (name,size,percentage_error,comp_level);}
-
-
-
-/*=================================================================*/
-/*        H3D_WRITE_TOC                                         */
-/*=================================================================*/
-
-void c_h3d_write_toc_()
-{
-    try {
-        bool rc2 = Hyper3DWriteTOC(h3d_file);
-        if( !rc ) throw rc;
-
-    } // end of try
-
-    catch(...)    {
-        Hyper3DExportClearError(h3d_file);
+    void c_h3d_open_file__(char *name, int *size, my_real *percentage_error, int *comp_level, char *RADVERS, int *LEN_RADVERS,
+                           my_real *FAC_M, my_real *FAC_L, my_real *FAC_T)
+    {
+        c_h3d_open_file_(name, size, percentage_error, comp_level, RADVERS, LEN_RADVERS, FAC_M, FAC_L, FAC_T);
     }
-}
 
-void _FCALL C_H3D_WRITE_TOC()
-{c_h3d_write_toc_ ();}
+    void c_h3d_open_file(char *name, int *size, my_real *percentage_error, int *comp_level, char *RADVERS, int *LEN_RADVERS,
+                         my_real *FAC_M, my_real *FAC_L, my_real *FAC_T)
+    {
+        c_h3d_open_file_(name, size, percentage_error, comp_level, RADVERS, LEN_RADVERS, FAC_M, FAC_L, FAC_T);
+    }
 
-void h3d_write_toc__ ()
-{c_h3d_write_toc_ ();}
+    /*=================================================================*/
+    /*        REOPEN_H3D_FILE                                            */
+    /*=================================================================*/
+    void c_h3d_reopen_file_(char *name, int *size, my_real *percentage_error, int *comp_level)
+    {
 
-void h3d_write_toc ()
-{c_h3d_write_toc_ ();}
+        rc = true;
+        subcase_id = 1;
 
+        model_count = 1;
+        model_tabular = false;
+        model_adaptive = H3D_BOOL_FALSE;
+        model_id = 1;
 
-/*=================================================================*/
+        assm_poolname_id = H3D_NULL_ID;
+
+        assm_count = 2;
+        assm_id = 1;
+        model_as_parent = H3D_NULL_ID;
+
+        assm_parent = 0; //assm_parent = 1
+
+        comp_poolname_id = H3D_NULL_ID;
+        node_poolname_id = H3D_NULL_ID;
+
+        comp_count = 1;
+        comp_id = 1;
+        comp_parent_id = 1; //comp_parent_id = assm 1
+
+        rbody_poolname_id = H3D_NULL_ID;
+        rbe2_poolname_id = H3D_NULL_ID;
+        rbe3_poolname_id = H3D_NULL_ID;
+        rwall_poolname_id = H3D_NULL_ID;
+        spring_poolname_id = H3D_NULL_ID;
+        beam_poolname_id = H3D_NULL_ID;
+        truss_poolname_id = H3D_NULL_ID;
+        elem1D_poolname_id = H3D_NULL_ID;
+        elem2D_poolname_id = H3D_NULL_ID;
+        sh4n_poolname_id = H3D_NULL_ID;
+        sh3n_poolname_id = H3D_NULL_ID;
+        shell_poolname_id = H3D_NULL_ID;
+        quad_poolname_id = H3D_NULL_ID;
+        skin_poolname_id = H3D_NULL_ID;
+        solid4n_poolname_id = H3D_NULL_ID;
+        solid10n_poolname_id = H3D_NULL_ID;
+        solid5n_poolname_id = H3D_NULL_ID;
+        solid6n_poolname_id = H3D_NULL_ID;
+        solid8n_poolname_id = H3D_NULL_ID;
+        solid16n_poolname_id = H3D_NULL_ID;
+        solid20n_poolname_id = H3D_NULL_ID;
+        rigid_poolname_id = H3D_NULL_ID;
+        solid_poolname_id = H3D_NULL_ID;
+        onedelem_poolname_id = H3D_NULL_ID;
+        sph_poolname_id = H3D_NULL_ID;
+        sphcell_poolname_id = H3D_NULL_ID;
+        sphnode_poolname_id = H3D_NULL_ID;
+
+        dt_id = 2;
+        pool_count = 0;
+        layer_count = 0;
+        has_corners = false;
+        poisson = 0.3f; //default & unused
+        dt_count = 2;
+
+        char *cname;
+        int cname_len;
+        int i;
+        cname_len = *size + 1;
+        cname = (char *)malloc(sizeof(char) * cname_len);
+        for (i = 0; i < *size; i++)
+            cname[i] = name[i];
+        cname[*size] = '\0';
+        //
+        //
+        // open h3d file
+        //
+        h3d_file = Hyper3DExportOpen(cname, H3D_SINGLEFILE | H3D_APPEND, NULL, ReportErrorMsg);
+
+        try
+        {
+            //SetModel must be called!
+            rc = Hyper3DSetModelToWrite(h3d_file, model_id, model_tabular);
+            if (!rc)
+                throw rc;
+
+            rc = Hyper3DAddString(h3d_file, H3D_DEFAULT_COMPPOOL, &comp_poolname_id);
+            if (!rc)
+                throw rc;
+
+            rc = Hyper3DAddString(h3d_file, H3D_DEFAULT_NODEPOOL, &node_poolname_id);
+            if (!rc)
+                throw rc;
+
+            rc = Hyper3DAddString(h3d_file, H3D_DEFAULT_ELEMPOOL1D, &elem1D_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char SHELLPOOL[] = "Shell";
+            rc = Hyper3DAddString(h3d_file, SHELLPOOL, &shell_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char SOLIDPOOL[] = "Solid";
+            rc = Hyper3DAddString(h3d_file, SOLIDPOOL, &solid_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char QUADPOOL[] = "QUAD";
+            rc = Hyper3DAddString(h3d_file, QUADPOOL, &quad_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char SKINPOOL[] = "SKIN";
+            rc = Hyper3DAddString(h3d_file, SKINPOOL, &skin_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char ONEDELEMPOOL[] = "1D";
+            rc = Hyper3DAddString(h3d_file, ONEDELEMPOOL, &onedelem_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char RIGIDPOOL[] = "Rigid";
+            rc = Hyper3DAddString(h3d_file, RIGIDPOOL, &rigid_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char SPHCELLPOOL[] = "SPHCELL";
+            rc = Hyper3DAddString(h3d_file, SPHCELLPOOL, &sphcell_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char SPHNODEPOOL[] = "SPHNodes";
+            rc = Hyper3DAddString(h3d_file, SPHNODEPOOL, &sphnode_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char SH3NPOOL[] = "SH3N";
+            rc = Hyper3DAddString(h3d_file, SH3NPOOL, &sh3n_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char SH4NPOOL[] = "SH4N";
+            rc = Hyper3DAddString(h3d_file, SH4NPOOL, &sh4n_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char SPRINGPOOL[] = "SPRING";
+            rc = Hyper3DAddString(h3d_file, SPRINGPOOL, &spring_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char TRUSSPOOL[] = "TRUSS";
+            rc = Hyper3DAddString(h3d_file, TRUSSPOOL, &truss_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char BEAMPOOL[] = "BEAM";
+            rc = Hyper3DAddString(h3d_file, BEAMPOOL, &beam_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char SOLID4NPOOL[] = "TETRA4";
+            rc = Hyper3DAddString(h3d_file, SOLID4NPOOL, &solid4n_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char SOLID10NPOOL[] = "TETRA10";
+            rc = Hyper3DAddString(h3d_file, SOLID10NPOOL, &solid10n_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char SOLID5NPOOL[] = "PENTA5";
+            rc = Hyper3DAddString(h3d_file, SOLID5NPOOL, &solid5n_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char SOLID6NPOOL[] = "PENTA6";
+            rc = Hyper3DAddString(h3d_file, SOLID6NPOOL, &solid6n_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char SOLID8NPOOL[] = "BRICK";
+            rc = Hyper3DAddString(h3d_file, SOLID8NPOOL, &solid8n_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char SOLID16NPOOL[] = "BRICK16";
+            rc = Hyper3DAddString(h3d_file, SOLID16NPOOL, &solid16n_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char SOLID20NPOOL[] = "BRICK20";
+            rc = Hyper3DAddString(h3d_file, SOLID20NPOOL, &solid20n_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char SPHPOOL[] = "Sph";
+            rc = Hyper3DAddString(h3d_file, SPHPOOL, &sph_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char RBODYPOOL[] = "Rbody";
+            rc = Hyper3DAddString(h3d_file, RBODYPOOL, &rbody_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char RBE2POOL[] = "Rbe2";
+            rc = Hyper3DAddString(h3d_file, RBE2POOL, &rbe2_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char RBE3POOL[] = "Rbe3";
+            rc = Hyper3DAddString(h3d_file, RBE3POOL, &rbe3_poolname_id);
+            if (!rc)
+                throw rc;
+
+            char RWALLPOOL[] = "Rwall";
+            rc = Hyper3DAddString(h3d_file, RWALLPOOL, &rwall_poolname_id);
+            if (!rc)
+                throw rc;
+
+        } //end of try
+
+        catch (...)
+        {
+            Hyper3DExportClearError(h3d_file);
+        }
+    }
+
+    void _FCALL C_H3D_REOPEN_FILE(char *name, int *size, my_real *percentage_error, int *comp_level)
+    {
+        c_h3d_reopen_file_(name, size, percentage_error, comp_level);
+    }
+
+    void c_h3d_reopen_file__(char *name, int *size, my_real *percentage_error, int *comp_level)
+    {
+        c_h3d_reopen_file_(name, size, percentage_error, comp_level);
+    }
+
+    void c_h3d_reopen_file(char *name, int *size, my_real *percentage_error, int *comp_level)
+    {
+        c_h3d_reopen_file_(name, size, percentage_error, comp_level);
+    }
+
+    /*=================================================================*/
+    /*        H3D_WRITE_TOC                                         */
+    /*=================================================================*/
+
+    void c_h3d_write_toc_()
+    {
+        try
+        {
+            bool rc2 = Hyper3DWriteTOC(h3d_file);
+            if (!rc)
+                throw rc;
+
+        } //end of try
+
+        catch (...)
+        {
+            Hyper3DExportClearError(h3d_file);
+        }
+    }
+
+    void _FCALL C_H3D_WRITE_TOC()
+    {
+        c_h3d_write_toc_();
+    }
+
+    void h3d_write_toc__()
+    {
+        c_h3d_write_toc_();
+    }
+
+    void h3d_write_toc()
+    {
+        c_h3d_write_toc_();
+    }
+
+    /*=================================================================*/
 }
 /*=================================================================*/
 /*        TRACE BACK   end                                         */
 /*=================================================================*/
-

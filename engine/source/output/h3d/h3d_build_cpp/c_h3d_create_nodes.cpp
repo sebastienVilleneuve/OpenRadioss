@@ -27,8 +27,6 @@
 #include <math.h>
 #include <fcntl.h>
 
-
-
 #ifdef _WIN32
 /* Windows includes */
 #include <windows.h>
@@ -36,7 +34,6 @@
 #include <io.h>
 #include <sys\types.h>
 #include <sys/stat.h>
-
 
 #elif 1
 
@@ -56,7 +53,7 @@
 #include "h3dpublic_defs.h"
 #include "h3dpublic_export.h"
 
-#define _FCALL 
+#define _FCALL
 
 #include "h3d_values.h"
 
@@ -68,61 +65,69 @@
 #define my_real double
 #endif
 
-extern "C" 
+extern "C"
 /*=================================================================*/
 {
-/*=================================================================*/
-/*     C_H3D_CREATE_NODES                                          */
-/*=================================================================*/
-void c_h3d_create_nodes_(int *ITAB, int *NUMNOD, my_real *X, int *TAGNOD, my_real *D)
-{
-    try {
-       
-        float node[3]; 
-        int i;
-        H3D_ID node_id;
-//
-
-
- 
-        if( *NUMNOD  != 0 ) 
+    /*=================================================================*/
+    /*     C_H3D_CREATE_NODES                                          */
+    /*=================================================================*/
+    void c_h3d_create_nodes_(int *ITAB, int *NUMNOD, my_real *X, int *TAGNOD, my_real *D)
+    {
+        try
         {
-            rc = Hyper3DPositionBegin(h3d_file, *NUMNOD , node_poolname_id);
-            if( !rc ) throw rc;
 
-            for(i=0;i<*NUMNOD;i++)  
+            float node[3];
+            int i;
+            H3D_ID node_id;
+            //
+
+            if (*NUMNOD != 0)
             {
-                if( TAGNOD[i] == 1 ) 
-                {
-             	     node[0] = X[3*i ]    - D[3*i ];
-             	     node[1] = X[3*i + 1] - D[3*i + 1];
-             	     node[2] = X[3*i + 2] - D[3*i + 2];
-             	     node_id = ITAB[i];
+                rc = Hyper3DPositionBegin(h3d_file, *NUMNOD, node_poolname_id);
+                if (!rc)
+                    throw rc;
 
-             	     if (node_id != 0) rc = Hyper3DPositionWrite(h3d_file, node_id, node, H3D_NULL_ID, H3D_NULL_ID); 
-             	     if( !rc ) throw rc;
-             	}
+                for (i = 0; i < *NUMNOD; i++)
+                {
+                    if (TAGNOD[i] == 1)
+                    {
+                        node[0] = X[3 * i] - D[3 * i];
+                        node[1] = X[3 * i + 1] - D[3 * i + 1];
+                        node[2] = X[3 * i + 2] - D[3 * i + 2];
+                        node_id = ITAB[i];
+
+                        if (node_id != 0)
+                            rc = Hyper3DPositionWrite(h3d_file, node_id, node, H3D_NULL_ID, H3D_NULL_ID);
+                        if (!rc)
+                            throw rc;
+                    }
+                }
+
+                rc = Hyper3DPositionEnd(h3d_file);
+                if (!rc)
+                    throw rc;
             }
 
-            rc = Hyper3DPositionEnd(h3d_file);
-            if( !rc ) throw rc;
+        } //end of try
+
+        catch (...)
+        {
+            Hyper3DExportClearError(h3d_file);
         }
-
-
-    } // end of try
-
-    catch(...) {
-        Hyper3DExportClearError(h3d_file);
     }
-}
 
-void _FCALL C_H3D_CREATE_NODES(int *ITAB, int *NUMNOD, my_real *X, int *TAGNOD, my_real *D)
-{c_h3d_create_nodes_ (ITAB,NUMNOD,X,TAGNOD,D);}
+    void _FCALL C_H3D_CREATE_NODES(int *ITAB, int *NUMNOD, my_real *X, int *TAGNOD, my_real *D)
+    {
+        c_h3d_create_nodes_(ITAB, NUMNOD, X, TAGNOD, D);
+    }
 
-void c_h3d_create_nodes__ (int *ITAB, int *NUMNOD, my_real *X, int *TAGNOD, my_real *D)
-{c_h3d_create_nodes_ (ITAB,NUMNOD,X,TAGNOD,D);}
+    void c_h3d_create_nodes__(int *ITAB, int *NUMNOD, my_real *X, int *TAGNOD, my_real *D)
+    {
+        c_h3d_create_nodes_(ITAB, NUMNOD, X, TAGNOD, D);
+    }
 
-void c_h3d_create_nodes (int *ITAB, int *NUMNOD, my_real *X, int *TAGNOD, my_real *D)
-{c_h3d_create_nodes_ (ITAB,NUMNOD,X,TAGNOD,D);}
-
+    void c_h3d_create_nodes(int *ITAB, int *NUMNOD, my_real *X, int *TAGNOD, my_real *D)
+    {
+        c_h3d_create_nodes_(ITAB, NUMNOD, X, TAGNOD, D);
+    }
 }

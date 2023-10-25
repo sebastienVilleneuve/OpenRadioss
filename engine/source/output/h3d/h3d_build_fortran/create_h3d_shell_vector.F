@@ -28,7 +28,7 @@ Chd|-- calls ---------------
 Chd|        ARRET                         source/system/arret.F         
 Chd|        H3D_MOD                       share/modules/h3d_mod.F       
 Chd|====================================================================
-      SUBROUTINE CREATE_H3D_SHELL_VECTOR(H3D_DATA,ID_SHELL_VECTOR ,N1       ,N2       ,ID_INPUT ,TEXT1  ,
+      SUBROUTINE CREATE_H3D_SHELL_VECTOR(H3D_DATA,ID_INPUT ,TEXT1  ,
      .                                       STEXT1       ,COMMENT    ,SCOMMENT  ,IPART    ,KEY3_GLOB ,
      .                                       LAYER    ,IPT    ,PLY             ,GAUSS    ,IUVAR)
 C-----------------------------------------------
@@ -47,7 +47,7 @@ C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
       TYPE (H3D_DATABASE) :: H3D_DATA
-      INTEGER ID_SHELL_VECTOR,ID_INPUT,STEXT1,N1,N2,SCOMMENT,
+      INTEGER ID_INPUT,STEXT1,SCOMMENT,
      .        LAYER,IPT,PLY,IUVAR,GAUSS
       INTEGER IPART(LIPART1,*)
       CHARACTER(LEN=STEXT1) :: TEXT1

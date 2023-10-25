@@ -27,8 +27,6 @@
 #include <math.h>
 #include <fcntl.h>
 
-
-
 #ifdef _WIN32
 /* Windows includes */
 #include <windows.h>
@@ -36,7 +34,6 @@
 #include <io.h>
 #include <sys\types.h>
 #include <sys/stat.h>
-
 
 #elif 1
 
@@ -56,79 +53,86 @@
 #include "h3dpublic_defs.h"
 #include "h3dpublic_export.h"
 
-#define _FCALL 
+#define _FCALL
 
 #include "h3d_values.h"
 
-extern "C" 
+extern "C"
 /*=================================================================*/
 {
 
-/*=================================================================*/
-/*        C_H3D_CREATE_DISPLACEMENT_DATATYPE                       */
-/*=================================================================*/
+    /*=================================================================*/
+    /*        C_H3D_CREATE_DISPLACEMENT_DATATYPE                       */
+    /*=================================================================*/
 
-void c_h3d_create_displacement_datatype_()
-{
-    try {
-        // create result data types
+    void c_h3d_create_displacement_datatype_()
+    {
+        try
+        {
+            //create result data types
 
-       
-        rc = Hyper3DDatatypeBegin(h3d_file, dt_count);
-        if( !rc ) throw rc;
+            rc = Hyper3DDatatypeBegin(h3d_file, dt_count);
+            if (!rc)
+                throw rc;
 
-        pool_count = 1;
-        dt_id = 1;     // the displacement data type
+            pool_count = 1;
+            dt_id = 1; //the displacement data type
 
-        rc = Hyper3DDatatypeWrite(h3d_file, "Animation", dt_id, H3D_DS_NONE, 
-                                    H3D_DS_UNKNOWN, pool_count);
-        if( !rc ) throw rc;
+            rc = Hyper3DDatatypeWrite(h3d_file, "Animation", dt_id, H3D_DS_NONE,
+                                      H3D_DS_UNKNOWN, pool_count);
+            if (!rc)
+                throw rc;
 
-        dt_id ++;  
-        pool_count = 1; 
-        rc = Hyper3DDatatypeWrite(h3d_file, "Displacement", dt_id, H3D_DS_VECTOR, 
-                                    H3D_DS_NODE, pool_count);
-        if( !rc ) throw rc;
-        rc = Hyper3DDatatypePools(h3d_file, dt_id, node_poolname_id, layer_count, 
-                                    layername_ids, has_corners, tensor_type, poisson);
-        if( !rc ) throw rc;
+            dt_id++;
+            pool_count = 1;
+            rc = Hyper3DDatatypeWrite(h3d_file, "Displacement", dt_id, H3D_DS_VECTOR,
+                                      H3D_DS_NODE, pool_count);
+            if (!rc)
+                throw rc;
+            rc = Hyper3DDatatypePools(h3d_file, dt_id, node_poolname_id, layer_count,
+                                      layername_ids, has_corners, tensor_type, poisson);
+            if (!rc)
+                throw rc;
 
-        rc = Hyper3DDatatypeEnd(h3d_file);
-        if( !rc ) throw rc;
-/*
-        // create Simulations
-        H3D_SIM_IDX sim_idx;
-        rc = Hyper3DSimulationBegin(h3d_file, max_sims, subcase_id);
-        if( !rc ) throw rc;
+            rc = Hyper3DDatatypeEnd(h3d_file);
+            if (!rc)
+                throw rc;
+            /*
+                    //create Simulations
+                    H3D_SIM_IDX sim_idx;
+                    rc = Hyper3DSimulationBegin(h3d_file, max_sims, subcase_id);
+                    if( !rc ) throw rc;
 
-        for( sim_idx=0; sim_idx < max_sims; sim_idx++ ) {
-            char name[32];
-            snprintf(name, sizeof(name), "Increment = %ld", sim_idx);
-            rc = Hyper3DSimulationWrite(h3d_file, sim_idx, name, (float)sim_idx);
-            if( !rc ) throw rc;
+                    for( sim_idx=0; sim_idx < max_sims; sim_idx++ ) {
+                        char name[32];
+                        snprintf(name, sizeof(name), "Increment = %ld", sim_idx);
+                        rc = Hyper3DSimulationWrite(h3d_file, sim_idx, name, (float)sim_idx);
+                        if( !rc ) throw rc;
+                    }
+                    rc = Hyper3DSimulationEnd(h3d_file);
+                    if( !rc ) throw rc;
+            */
+
+        } //end of try
+
+        catch (...)
+        {
+            Hyper3DExportClearError(h3d_file);
         }
-        rc = Hyper3DSimulationEnd(h3d_file); 
-        if( !rc ) throw rc;
-*/
-
-    } // end of try
-
-    catch(...) {
-        Hyper3DExportClearError(h3d_file);
     }
 
-}
+    void _FCALL C_H3D_CREATE_DISPLACEMENT_DATATYPE()
+    {
+        c_h3d_create_displacement_datatype_();
+    }
 
+    void c_h3d_create_displacement_datatype__()
+    {
+        c_h3d_create_displacement_datatype_();
+    }
 
-
-
-void _FCALL C_H3D_CREATE_DISPLACEMENT_DATATYPE()
-{c_h3d_create_displacement_datatype_ ();}
-
-void c_h3d_create_displacement_datatype__ ()
-{c_h3d_create_displacement_datatype_ ();}
-
-void c_h3d_create_displacement_datatype ()
-{c_h3d_create_displacement_datatype_ ();}
-
+    void c_h3d_create_displacement_datatype()
+    {
+        c_h3d_create_displacement_datatype_();
+    }
 }

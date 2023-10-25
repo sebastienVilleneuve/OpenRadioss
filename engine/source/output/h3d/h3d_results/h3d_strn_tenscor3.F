@@ -31,7 +31,7 @@ Chd|        ELBUFDEF_MOD                  ../common_source/modules/mat_elem/elbu
 Chd|        INITBUF_MOD                   share/resol/initbuf.F         
 Chd|====================================================================
       SUBROUTINE STRN_TENSCOR3(ELBUF_TAB,IPARG   ,IXS      ,IXS10   ,X        ,
-     .                         PM       ,KCVT    ,NEL      ,EVAR    )
+     .                         KCVT    ,NEL      ,EVAR    )
 C-----------------------------------------------
 C   M o d u l e s
 C-----------------------------------------------
@@ -53,7 +53,7 @@ C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
 C     REAL
       my_real
-     .   EVAR(6,20,MVSIZ),X(3,*),PM(NPROPM,*)
+     .   EVAR(6,20,MVSIZ),X(3,*)
       INTEGER IPARG(NPARG),IXS(NIXS,*),IXS10(6,*),KCVT ,NEL 
       TYPE (ELBUF_STRUCT_), TARGET :: ELBUF_TAB
 C-----------------------------------------------

@@ -28,7 +28,7 @@ Chd|-- calls ---------------
 Chd|        ARRET                         source/system/arret.F         
 Chd|        H3D_MOD                       share/modules/h3d_mod.F       
 Chd|====================================================================
-      SUBROUTINE CREATE_H3D_1D_TENSOR(H3D_DATA,ID_1D_TENSOR,ID_INPUT,TEXT1,STEXT1,
+      SUBROUTINE CREATE_H3D_1D_TENSOR(H3D_DATA,ID_INPUT,TEXT1,STEXT1,
      .                                COMMENT,SCOMMENT,IPART,KEY3_GLOB,IPT)
 C-----------------------------------------------
 C   M o d u l e s
@@ -46,7 +46,7 @@ C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
       TYPE (H3D_DATABASE) :: H3D_DATA
-      INTEGER ID_1D_TENSOR,ID_INPUT,STEXT1,SCOMMENT,IPT
+      INTEGER ID_INPUT,STEXT1,SCOMMENT,IPT
       INTEGER IPART(LIPART1,*)
       CHARACTER(LEN=STEXT1) :: TEXT1
       CHARACTER(LEN=SCOMMENT) ::  COMMENT

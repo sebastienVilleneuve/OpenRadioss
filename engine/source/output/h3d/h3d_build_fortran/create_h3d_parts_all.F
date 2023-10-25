@@ -28,7 +28,7 @@ Chd|-- calls ---------------
 Chd|        ARRET                         source/system/arret.F         
 Chd|        H3D_MOD                       share/modules/h3d_mod.F       
 Chd|====================================================================
-      SUBROUTINE CREATE_H3D_PARTS_ALL(H3D_DATA,IPART)
+      SUBROUTINE CREATE_H3D_PARTS_ALL(H3D_DATA)
 C-----------------------------------------------
 C   M o d u l e s
 C-----------------------------------------------
@@ -41,7 +41,6 @@ C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
       TYPE (H3D_DATABASE) :: H3D_DATA
-      INTEGER IPART(LIPART1,*)
 C-----------------------------------------------
 C   C o m m o n   B l o c k s
 C-----------------------------------------------
