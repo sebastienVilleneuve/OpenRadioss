@@ -180,6 +180,7 @@ C-----------------------------------------------
       USE TABLE_MOD
       USE HM_READ_MAT169_ARUP_MOD
       USE HM_READ_MAT126_MOD
+      USE HM_READ_MAT129_MOD
 C-----------------------------------------------
 C   I m p l i c i t   T y p e s
 C-----------------------------------------------
@@ -331,6 +332,7 @@ c
 !     In case of /MAT/GAS, there is a third keyword,hence, KEY does not end with \000 character
            KEY = KEY(1:LEN_TRIM(KEY))
         ENDIF
+        
         SELECT CASE(KEY)
 c-------
           CASE ('LAW0','VOID')
@@ -1135,6 +1137,12 @@ c-------
      .           NUVAR    ,MTAG     ,MATPARAM ,NPROPM   ,IOUT     ,
      .           PARMAT   ,UNITAB   ,PM(1,I)  ,LSUBMODEL,ISRATE   ,
      .           MAT_ID   ,TITR     )
+c-------
+          CASE ('LAW129','LUNG_TISSUE')
+            ILAW = 129  
+            CALL HM_READ_MAT129(MTAG     ,
+     .           MATPARAM  , NUVAR  ,  UNITAB    ,LSUBMODEL,
+     .           MAT_ID    ,TITR      , PM(1,I)    ,IOUT     , NPROPM)    
 c-------
           CASE ('LAW151','MULTIFLUID')
             ILAW  = 151
