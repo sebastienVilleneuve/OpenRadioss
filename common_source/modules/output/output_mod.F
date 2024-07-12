@@ -61,9 +61,11 @@ Chd|        TIME_HISTORY_MOD              modules/output/time_history_mod.F
 Chd|====================================================================
       MODULE OUTPUT_MOD
         USE TIME_HISTORY_MOD
+        USE STATE_FILE_MOD
 
         TYPE OUTPUT_
            TYPE (TH_) :: TH
+           TYPE (STATE_) :: STATE
         END TYPE OUTPUT_
 
       END MODULE OUTPUT_MOD

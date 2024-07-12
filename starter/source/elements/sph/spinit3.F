@@ -203,6 +203,10 @@ C--------------------------------------------------
      .                NEL   )
        END IF
 C--------------------------------------------------
+       DO I=LFT,LLT
+         GBUF%SIG(II(1)+I) = ZERO
+       ENDDO
+C--------------------------------------------------
 C     GENERAL CELLS, END.
 C--------------------------------------------------
       IP=1
@@ -221,9 +225,11 @@ C--------------------------------------------------
          DO I=LFT,LLT
            N = I+NFT
            JJ=PTSPH(N)
-           IF(JJ/=0.AND.SIGSPH(11,JJ)/=0.)THEN
-             SPBUF(1,N)=SIGSPH(11,JJ)
-           END IF
+           IF(JJ/=0) THEN
+             IF(SIGSPH(11,JJ)/=0.)THEN
+               SPBUF(1,N)=SIGSPH(11,JJ)
+             ENDIF
+           ENDIF
            SPBUF(2,N) = GBUF%RHO(I)
          ENDDO
        ENDIF
