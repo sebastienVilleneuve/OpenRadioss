@@ -102,6 +102,8 @@ C
       ELSEIF(IOUTP0==-1)THEN
         IOUTPUT = 0
       ENDIF
+
+      IPRI = 7 
 C--------------------------------------------------------------
       RETURN
       END

@@ -236,7 +236,8 @@ C-----------------------------------------------
       DATA S0FILE/'                '/
       DATA XRFILE/'                '/
       DATA IUN/1/
-
+      CALL HM_DEBUG_PRINT_OPTION('/TFILE')
+      CALL HM_DEBUG_PRINT_OPTION('/SET')
 C-----------------------------------------------
 C   S o u r c e   L i n e s
 C-----------------------------------------------
