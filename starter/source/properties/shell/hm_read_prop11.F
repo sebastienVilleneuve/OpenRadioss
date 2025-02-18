@@ -92,7 +92,7 @@ C-----------------------------------------------
       INTEGER ID,ID1,IUN
       CHARACTER(LEN=NCHARTITLE) :: TITR,TITR1
       INTEGER     IHBE_D,IPLA_D,ISTR_D,ITHK_D,ISHEA_D,ISST_D,
-     .           ISH3N_D, ISTRA_D,NPTS_D,IDRIL_D
+     .           ISH3N_D, ISTRA_D,NPTS_D,IDRIL_D, IPPLY
       LOGICAL IS_AVAILABLE, IS_ENCRYPTED
 C-----------------------------------------------
 C   E x t e r n a l   F u n c t i o n s
@@ -417,6 +417,8 @@ C----------------------
             CALL HM_GET_FLOAT_ARRAY_INDEX('Prop_Thick',THK_I,K,IS_AVAILABLE,LSUBMODEL,UNITAB)
             CALL HM_GET_FLOAT_ARRAY_INDEX('Prop_Zi',Z_I,K,IS_AVAILABLE,LSUBMODEL,UNITAB)
             CALL HM_GET_FLOAT_ARRAY_INDEX('Prop_WFi',WEIGHT,K,IS_AVAILABLE,LSUBMODEL,UNITAB)
+
+            CALL HM_GET_INT_ARRAY_INDEX('Ipply',IPPLY,K,IS_AVAILABLE,LSUBMODEL)
 
 C----------------------
            GEO(IPANG+K) = PHI_I
