@@ -89,7 +89,7 @@ C-----------------------------------------------
       my_real AN, VX, VY, VZ, THICKT, DT, TMIN, TMAX,WEIGHT,PTHK,CVIS,PUN,
      .        PHI_I,THK_I,Z_I,WF_I,ZSHIFT
       INTEGER ISH3N
-      INTEGER ID,ID1,IUN
+      INTEGER ID,ID1,IUN,IPPLY,NLY_TMP,L,M
       CHARACTER(LEN=NCHARTITLE) :: TITR,TITR1
       INTEGER     IHBE_D,IPLA_D,ISTR_D,ITHK_D,ISHEA_D,ISST_D,
      .           ISH3N_D, ISTRA_D,NPTS_D,IDRIL_D
@@ -158,6 +158,18 @@ C--------------------------------------------------
 C EXTRACT DATA (IS OPTION CRYPTED)
 C--------------------------------------------------
       CALL HM_OPTION_IS_ENCRYPTED(IS_ENCRYPTED)
+C--------------------------------------------------
+C PARSE ALL THE PLIES TO COMPUTE NEW PLY NUMBER ACCORDINGLY TO IPPLY
+C--------------------------------------------------
+      CALL HM_GET_INTV('NIP',NLY,IS_AVAILABLE,LSUBMODEL)
+      NLY_TMP = 0
+      DO K=1,NLY
+          CALL HM_GET_INT_ARRAY_INDEX('Ipply',IPPLY,K,IS_AVAILABLE,LSUBMODEL)
+          IF(IPPLY == 0) IPPLY = 1
+          NLY_TMP = NLY_TMP + IPPLY
+      ENDDO
+      print *, 'NLY_TMP = ', NLY_TMP
+
 C--------------------------------------------------
 C EXTRACT DATAS (INTEGER VALUES)
 C--------------------------------------------------
@@ -402,16 +414,19 @@ C---
      .               C1=TITR)
       ENDIF
       N1    = MIN0(NLY,NLYMAX)
-      GEO(6)= N1+EM01  ! to be cleaned
-      IGEO(4) = N1
+      GEO(6)= MAX(N1,NLY_TMP)+EM01  ! to be cleaned
+      IF(NLY_TMP >= 100) stop !put an error
+      IGEO(4) = MAX(N1,NLY_TMP)
+      print *,'IGEO(4)',IGEO(4)
 C--------------------------------------------------------------------
 C    LECTURE DES ANGLES,EPAISSEURS,POSITIONS DE COUCHES ET MATERIAUX
 C--------------------------------------------------------------------
 C----------------------
 C READ LINE 5 -> 5+N1
 C----------------------
+        M = 0
         DO K=1,N1
-            CALL HM_GET_INT_ARRAY_INDEX('Prop_mi',NUML(K),K,IS_AVAILABLE,LSUBMODEL)
+            CALL HM_GET_INT_ARRAY_INDEX('Ipply',IPPLY,K,IS_AVAILABLE,LSUBMODEL)
 
             CALL HM_GET_FLOAT_ARRAY_INDEX('Prop_phi',PHI_I,K,IS_AVAILABLE,LSUBMODEL,UNITAB)
             CALL HM_GET_FLOAT_ARRAY_INDEX('Prop_Thick',THK_I,K,IS_AVAILABLE,LSUBMODEL,UNITAB)
@@ -419,11 +434,17 @@ C----------------------
             CALL HM_GET_FLOAT_ARRAY_INDEX('Prop_WFi',WEIGHT,K,IS_AVAILABLE,LSUBMODEL,UNITAB)
 
 C----------------------
-           GEO(IPANG+K) = PHI_I
-           GEO(IPTHK+K) = THK_I 
-           GEO(IPPOS+K) = Z_I
-           IF (WEIGHT == ZERO) WEIGHT = ONE
-           GEO(IPWEIGHT+K)= WEIGHT
+           DO L=1,IPPLY
+            print *,'coucou1'
+             M = M + 1
+             CALL HM_GET_INT_ARRAY_INDEX('Prop_mi',NUML(M),K,IS_AVAILABLE,LSUBMODEL)
+             GEO(IPANG+M) = PHI_I
+             GEO(IPTHK+M) = THK_I/IPPLY 
+             GEO(IPPOS+M) = Z_I ! to change
+             IF (WEIGHT == ZERO) WEIGHT = ONE
+             GEO(IPWEIGHT+M)= WEIGHT
+            print *,'coucou2'
+           ENDDO
         ENDDO
 C---  calcul epaisseur & position des couches
       IGEO(99) = IPOS
@@ -432,7 +453,7 @@ C---  calcul epaisseur & position des couches
         TMIN = EP20
         TMAX = -EP20
 
-        DO N=1,N1
+        DO N=1,NLY_TMP
           DT = HALF*GEO(IPTHK+N)
           TMIN = MIN(TMIN,GEO(IPPOS+N)-DT)
           TMAX = MAX(TMAX,GEO(IPPOS+N)+DT)
@@ -442,21 +463,21 @@ C---  calcul epaisseur & position des couches
         DT = ZERO
         IF (DEFAULTS_SHELL%IOFFSET==3) DT = ZSHIFT
         GEO(200)=THICKT
-        DO N=1,N1
+        DO N=1,NLY_TMP
           GEO(IPTHK+N)=GEO(IPTHK+N) / MAX(THICKT,EM20)
           GEO(IPPOS+N)=(GEO(IPPOS+N)-DT) / MAX(THICKT,EM20)
         ENDDO
       ELSE
         THICKT = ZERO
-        DO N=1,N1
+        DO N=1,NLY_TMP
           THICKT=THICKT+GEO(IPTHK+N)
         ENDDO
-        DO N=1,N1
+        DO N=1,NLY_TMP
           GEO(IPTHK+N)=GEO(IPTHK+N) / MAX(THICKT,EM20)
         ENDDO
 C---      calcul automatique de position des couches
         GEO(IPPOS+1) = -HALF + HALF*GEO(IPTHK+1)
-        DO N=2,N1
+        DO N=2,NLY_TMP
           GEO(IPPOS+N) = GEO(IPPOS+N-1)
      .                 + HALF*(GEO(IPTHK+N)+GEO(IPTHK+N-1))
         ENDDO
@@ -509,7 +530,7 @@ C-------LAYER 1
         IGEO(IPMAT+1) = 1
   250 CONTINUE
 C-----OTHER LAYERS
-      DO 350 N=2,N1
+      DO 350 N=2,NLY_TMP
         DO J=1,NUMMAT
            IF(IPM(1,J) == NUML(N)) THEN
              IGEO(IPMAT+N) = J
@@ -539,7 +560,7 @@ C-----OTHER LAYERS
        IGEO(IPMAT+N) = 1
   350 CONTINUE
 C
-      DO N=1,N1
+      DO N=1,NLY_TMP
         M1=IPANG+N
         M2=IPTHK+N
         M3=IPPOS+N
