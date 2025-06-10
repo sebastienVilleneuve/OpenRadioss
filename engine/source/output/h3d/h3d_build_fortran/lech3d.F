@@ -87,7 +87,7 @@ Copyright>        commercial version may interest you: https://www.altair.com/ra
       !||====================================================================
       SUBROUTINE LECH3D(GEO,IGEO,IPM,IPART,H3D_DATA,MULTI_FVM,IPARI,IPARG,TAG_SKINS6,
      .                  MDS_LABEL,MDS_OUTPUT_TABLE,MDS_NMAT,MAX_DEPVAR,MDS_NDEPSVAR,
-     .                  ELBUF_STR,STACK,IBCL,ILOADP,LLOADP,LOADS,MAT_PARAM,PBLAST)
+     .                  ELBUF_STR,STACK,IBCL,ILOADP,LLOADP,LOADS,MAT_PARAM,PBLAST,SIZE_OUTPUT_LIST)
 C-----------------------------------------------
 C   M o d u l e s
 C-----------------------------------------------
@@ -133,6 +133,7 @@ C-----------------------------------------------
         TYPE (LOADS_), INTENT(IN)    :: LOADS
         TYPE (MATPARAM_STRUCT_) ,DIMENSION(NUMMAT) ,INTENT(INOUT) :: MAT_PARAM
         TYPE (PBLAST_) :: PBLAST
+        INTEGER, INTENT(OUT) :: SIZE_OUTPUT_LIST
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
@@ -925,7 +926,6 @@ c
                 ENDIF
 C-----------------------------
               ENDDO
-
               DEALLOCATE (INTER_INPUT)
               DEALLOCATE (IS_AVAILABLE_KEY)
             ENDIF
@@ -2707,6 +2707,9 @@ C=========================================================================
             H3D_DATA%OUTPUT_LIST(I)%N_OUTP = 0
           ENDIF
         ENDDO
+
+        SIZE_OUTPUT_LIST = SIZE_OUTPUT_LIST + H3D_DATA%N_OUTP_H3D
+
         IF (IS_SKING > 0) THEN
           ISKIND=0
           IF (IOUTER==1) ISKIND=ISKIND+1
@@ -2792,6 +2795,7 @@ C
         DEALLOCATE(H3D_KEYWORD_QUAD_TENSOR)
         DEALLOCATE(ID_MAT_MDS)
         IF (ALLOCATED(IRUP_ID_ALL)) DEALLOCATE (IRUP_ID_ALL)
+
 C
         RETURN
       END

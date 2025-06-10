@@ -249,6 +249,7 @@ C-----------------------------------------------
       LOGICAL IS_ALREADY_PRINTED
       REAL(KIND=8) :: DTH
       REAL(KIND=8), DIMENSION(9) :: DTH1
+      INTEGER IBID
 C-----------------------------------------------
 C   E x t e r n a l   F u n c t i o n s
 C-----------------------------------------------
@@ -701,12 +702,18 @@ C
 C-------------------------------------------
 C     .h3d files
 C-------------------------------------------
+      IBID = 0
+!
       CALL PRELECH3D(NUMGEO   ,NPROPGI  ,NPROPMI  ,NUMMAT   ,NUMPLY   ,
      .               IGEO     ,IPM      ,H3D_DATA ,MULTI_FVM,MDS_OUTPUT_TABLE,
-     .               MDS_NMAT ,MAX_DEPVAR,MDS_NDEPSVAR,MAT_PARAM)
+     .               MDS_NMAT ,MAX_DEPVAR,MDS_NDEPSVAR,MAT_PARAM,NGROUP,
+     .               NPROPG, NPARG, NPARI, LIPART1, ELBUF_STR,GEO,
+     .               IBCL     ,ILOADP,  IPARG, IPARI , IPART, LLOADP, LOADS, MDS_LABEL,
+     .               PBLAST   ,STACK, TAG_SKINS6)
+
       CALL LECH3D(GEO,IGEO,IPM,IPART,H3D_DATA,MULTI_FVM,IPARI,IPARG,TAG_SKINS6,
      .            MDS_LABEL,MDS_OUTPUT_TABLE,MDS_NMAT,MAX_DEPVAR,MDS_NDEPSVAR,
-     .            ELBUF_STR,STACK,IBCL,ILOADP,LLOADP,LOADS,MAT_PARAM,PBLAST)
+     .            ELBUF_STR,STACK,IBCL,ILOADP,LLOADP,LOADS,MAT_PARAM,PBLAST,IBID)
 c
       IF(H3D_DATA%N_OUTP_H3D /= 0 .AND. ISPMD == 0)THEN
         WRITE(IOUT,5000)H3D_DATA%TH3D,H3D_DATA%DTH3D

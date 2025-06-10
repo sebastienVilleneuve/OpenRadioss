@@ -49,7 +49,10 @@
       subroutine prelech3d(                                                    &
         numgeo   ,npropgi  ,npropmi  ,nummat   ,numply   ,igeo     ,           &
         ipm      ,h3d_data ,multi_fvm,mds_output_table   ,mds_nmat ,           &
-        max_depvar,      mds_ndepsvar,mat_param) 
+        max_depvar,      mds_ndepsvar,mat_param,ngroup, &
+        npropg, nparg, npari, lipart1,elbuf_str,geo,                 &
+        ibcl     ,iloadp,  iparg, ipari , ipart, lloadp, loads, mds_label, &
+        pblast   ,stack, tag_skins6) 
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
@@ -88,6 +91,31 @@
         integer, intent(in) :: max_depvar
         integer, dimension(*) :: mds_ndepsvar
         type (matparam_struct_) ,dimension(nummat) ,intent(inout) :: mat_param
+        
+        
+        integer, intent(in) :: ngroup
+        integer, intent(in) :: npropg
+        integer, intent(in) :: nparg
+        integer, intent(in) :: npari
+        integer, intent(in) :: lipart1
+
+
+
+        type(elbuf_struct_), target, dimension(ngroup), intent(in) :: elbuf_str
+        my_real, intent(in) ::  geo(npropg,numgeo)
+        integer, intent(in) :: ibcl(*)
+        integer, intent(in) :: iloadp(*)
+        integer, intent(in) :: iparg(nparg,ngroup)
+        integer, intent(in) :: ipari(npari,*)
+        integer, intent(in) :: ipart(lipart1,*)
+        integer, intent(in) :: lloadp(*)
+        integer, intent(in) :: tag_skins6(*)
+
+        type (loads_), intent(in)    :: loads
+        character*64 mds_label(1024,mds_nmat)
+        type (pblast_), intent(in) :: pblast
+        type (stack_ply), intent(in) :: stack
+        
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -110,6 +138,7 @@
           key2_read
         character(len=ncharline100) :: key3_read,key3_glob
         integer :: nunits,sizetot
+        integer :: size_output_list
 !===============================================================================
 !
         !< Local variables initialization
@@ -630,8 +659,25 @@
         enddo  
 ! 
         !< Allocation of the output list
+        sizetot = max(sizetot,10000)
+        allocate(h3d_data%output_list(sizetot))
+        h3d_data%output_list(1:sizetot)%ok = 0
+!
+        size_output_list = 0
+        call lech3d(geo,igeo,ipm,ipart,h3d_data,multi_fvm,ipari,iparg,tag_skins6,&
+                    mds_label,mds_output_table,mds_nmat,max_depvar,mds_ndepsvar,&
+                    elbuf_str,stack,ibcl,iloadp,lloadp,loads,mat_param,pblast,size_output_list)
+
+        if(allocated(h3d_data%output_list)) deallocate(h3d_data%output_list)
+        h3d_data%n_outp_h3d = 0
+        if(allocated(h3d_data%parts(1)%part)) deallocate(h3d_data%parts(1)%part)
+        
+        if(allocated(h3d_data%n_skid_inter)) deallocate(h3d_data%n_skid_inter)  
+        if(allocated(h3d_data%n_cse_fric_inter)) deallocate(h3d_data%n_cse_fric_inter)
+
+        !< Allocation of the output list
         if (h3d_data%n_input_h3d > 0) then 
-          sizetot = max(sizetot,10000)
+          sizetot = max(sizetot,size_output_list)
           allocate(h3d_data%output_list(sizetot))
           h3d_data%output_list(1:sizetot)%ok = 0
         else
