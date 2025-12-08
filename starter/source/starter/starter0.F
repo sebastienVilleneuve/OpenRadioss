@@ -102,6 +102,7 @@ C-----------------------------------------------
       use checksum_starter_option_mod
       use checksum_check_mod
       use th_mod , only : TH_HAS_NODA_PEXT
+      USE hm_convert_tetra4_to_tetra10_mod
 C-----------------------------------------------
 C   I m p l i c i t   T y p e s
 C-----------------------------------------------
@@ -737,6 +738,10 @@ C------------------------------------------------
      .                             MSGTYPE=MSGERROR,
      .                         C1='LSUBMODEL')
       ENDIF
+C-------------------------------------------------------------------
+C Convert /TETRA4 + Itetra4=1  to /TETRA10
+C-------------------------------------------------------------------
+      CALL HM_CONVERT_TETRA4_TO_TETRA10()
 C-------------------------------------------------------------------
 C Convert /INTER/TYPE19 in memory to /INTER/TYPE7 & /INTER/TYPE11
 C-------------------------------------------------------------------
