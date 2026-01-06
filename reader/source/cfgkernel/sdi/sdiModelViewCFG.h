@@ -295,6 +295,7 @@ protected:
     const SDITypeMapper p_typemapper;
     SDIIdManager* p_pIdManager = nullptr;
     mutable unsigned int p_currentIncludeId = 0;
+    mutable unsigned int p_previousIncludeId = 0;
 
 private:
     // initialized from current cfg kernel at construction time:

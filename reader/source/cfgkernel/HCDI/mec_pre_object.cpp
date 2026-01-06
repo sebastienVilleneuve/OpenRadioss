@@ -2111,9 +2111,13 @@ bool MECPreObject::GetExpressionValue(const PseudoDescriptor_t  *descr_p, const 
 /* --------- Report --------- */
 
 char *MECPreObject::GetReport(const PseudoDescriptor_t *descr_p) const {
+
+  printf("Generating report  \n");
   const IDescriptor *a_descr_p=(const IDescriptor *)descr_p;
   string a_report="";
   a_report+=str_printf("%s/%d/%s {\n",GetKernelFullType(),GetId(),GetTitle());
+  printf("test !!!!!! \n");
+  printf(a_report.c_str());
   //
   int i,j,k,l;
   int a_nb_atypes  = ATY_LAST-ATY_UNKNOWN-1;

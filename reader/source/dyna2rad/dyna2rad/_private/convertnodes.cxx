@@ -23,6 +23,7 @@
 
 #include <dyna2rad/convertnodes.h>
 #include <dyna2rad/dyna2rad.h>
+#include <dyna2rad/convertutils.h>
 
 using namespace sdiD2R;
 using namespace std;

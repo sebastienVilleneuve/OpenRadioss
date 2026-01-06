@@ -104,6 +104,7 @@ CDECL void cpp_node_sub_tag_dyna_(int *TAGNODSUB, int *IDNOD)
         }
         TAGNODSUB[i] = includeId;
         IDNOD[i] = nodes->GetId();
+        printf("NODE ID=%d SUBMODEL ID=%d INCLUDE ID=%d\n", IDNOD[i], submodelId, includeId);
         i++;
     }
 }

@@ -80,16 +80,20 @@ void PrintEntity(
 void PrintPreObjectReport(
     FILE *file, ModelViewRead *pModelView, const EntityRead &entity)
 {
+    printf("---- PreObject Report ----\n");
     EntityType type = entity.GetType();
     
     SpecializationType Stype = pModelView->GetSpecializationType(type);
 
-    if (Stype != SPECIALIZATION_TYPE_GENERAL) 
+    if (Stype != SPECIALIZATION_TYPE_GENERAL ) 
         return;
+
 
     IMECPreObject *pPreObject = (IMECPreObject*)entity.GetHandle().GetPointer();
     if(!pPreObject) return;
     const char *kft = pPreObject->GetKernelFullType();
     const IDescriptor *descr_p = HCDI_GetDescriptorHandle(kft);
     fprintf(file,"%s \n",pPreObject->GetReport(descr_p));
+
+    
 }
