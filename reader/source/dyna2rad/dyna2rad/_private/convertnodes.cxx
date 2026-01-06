@@ -23,6 +23,7 @@
 
 #include <dyna2rad/convertnodes.h>
 #include <dyna2rad/dyna2rad.h>
+#include <dyna2rad/convertutils.h>
 
 using namespace sdiD2R;
 using namespace std;
@@ -43,5 +44,26 @@ void sdiD2R::ConvertNode::ConvertEntities()
     {
         HandleNodeEdit nodeHEdit;
         p_radiossModel->CreateNode(nodeHEdit, "/NODE", selNode->GetPosition(),selNode->GetId());
+        
+        // Propagate include hierarchy from source to target
+        if (nodeHEdit.IsValid())
+        {
+            HandleRead sourceInclude = selNode->GetInclude();
+            if (sourceInclude.IsValid())
+            {
+                // Find the corresponding include/submodel in the Radioss model
+                unsigned int includeId = sourceInclude.GetId(p_lsdynaModel);
+                EntityType includeType = sourceInclude.GetType();
+                
+                // Map the include/submodel to the Radioss model
+                HandleEdit targetInclude;
+                //if (p_radiossModel->FindById(includeType, includeId, targetInclude))
+                //{
+                    // Set the include parent for the node
+                    EntityEdit nodeEntEdit(p_radiossModel, nodeHEdit);
+                    nodeEntEdit.SetInclude(targetInclude);
+               // }
+            }
+        }
     }
 }

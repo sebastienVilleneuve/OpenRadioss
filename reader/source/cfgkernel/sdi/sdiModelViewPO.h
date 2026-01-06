@@ -374,7 +374,17 @@ public:
     }
 
     // this is called indirectly when looping through a selection and must not change keyword and type
-    virtual void Init() {}
+    virtual void Init() 
+    {
+        if(nullptr != p_ptr)
+        {
+            p_keyword = p_ptr->GetInputFullType();
+        }
+        else
+        {
+            p_keyword = "";
+        }
+    }
 };
 
 // Template for PreObject-based EntityData, where multiple entities are stored in arrays of a PreObject

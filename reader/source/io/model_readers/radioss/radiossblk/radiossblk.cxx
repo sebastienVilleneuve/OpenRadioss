@@ -85,7 +85,7 @@ public:
         myTypeGrnod = GetEntityType("/GRNOD");
         myTypeUnit = GetEntityType("/UNIT");
         myTypeInclude = GetEntityType("#include");
-        //myTypeSubmodel = GetEntityType("//SUBMODEL");
+        myTypeSubmodel = GetEntityType("//SUBMODEL");
         myTypeParameter = GetEntityType("/PARAMETER");
     }
 

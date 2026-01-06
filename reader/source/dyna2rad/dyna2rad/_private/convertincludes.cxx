@@ -84,24 +84,42 @@ void sdiD2R::ConvertInclude::ConvertEntities()
 
     SelectionRead selInclude(p_lsdynaModel, "*INCLUDE");
 
-    while (selInclude.Next())
-    {
-        unsigned int id = selInclude->GetId();
-        sdiString name = selInclude->GetName();
-        name += "_0000.rad";
+    HandleEdit includeHEdit;
 
-        HandleEdit includeHEdit;
-        p_radiossModel->CreateEntity(includeHEdit, "#include" , name, id);
-    }
+   /* while (selInclude.Next())
+    {
+        if(selInclude->GetKeyword() != "*INCLUDE_TRANSFORM")
+        {
+            unsigned int id = selInclude->GetId();
+            sdiString name = selInclude->GetName();
+            name += "_0000.rad";
+
+            p_radiossModel->CreateEntity(includeHEdit, "#include" , name, id);
+        }
+    }*/
 
     // For each *INCLUDE_TRANSFORM we need a //SUBMODEL, which contains the include.
     // We do this in a second iteration as a temporary workaround, because otherwise the
     // p_radiossModel gets confused with include ids
     EntityType includeType = p_radiossModel->GetEntityType("#include");
-    selInclude.Restart();
+    //selInclude.Restart();
+
+    
+    //p_radiossModel->CreateEntity(includeHEdit, "#include" , "root", 10000);
+
+
     while (selInclude.Next())
     {
-        if(selInclude->GetKeyword() == "*INCLUDE_TRANSFORM")
+        if(selInclude->GetKeyword() != "*INCLUDE_TRANSFORM")
+        {
+            unsigned int id = selInclude->GetId();
+            sdiString name = selInclude->GetName();
+            name += "_0000.rad";
+
+            p_radiossModel->CreateEntity(includeHEdit, "#include" , name, id);
+        }
+
+        else if(selInclude->GetKeyword() == "*INCLUDE_TRANSFORM")
         {
             unsigned int id = selInclude->GetId();
             sdiString name = selInclude->GetName();
@@ -110,6 +128,12 @@ void sdiD2R::ConvertInclude::ConvertEntities()
             p_radiossModel->CreateEntity(submodelHEdit, "//SUBMODEL",
                 "Submodel " + to_string(id));
             EntityEdit submodelEntEdit(p_radiossModel, submodelHEdit);
+            submodelEntEdit.SetValue(sdiIdentifier("name"), sdiValue(name));
+            
+            name += "_0000.rad";
+
+            p_radiossModel->CreateEntity(includeHEdit, "#include" , name, id);
+
 
             if(p_useSubmodelOffsets)
             {
@@ -143,6 +167,7 @@ void sdiD2R::ConvertInclude::ConvertEntities()
             includeEntEdit.SetInclude(submodelHEdit);
             submodelEntEdit.SetInclude(parentHRead);
 
+            
             // convert define transform, if present
             sdiValue tempVal;
             selInclude->GetValue(sdiIdentifier("TRANID"), tempVal);
@@ -206,4 +231,5 @@ void sdiD2R::ConvertInclude::ConvertEntities()
             }
         }
     }
+    p_radiossModel->CreateEntity(includeHEdit, "#include" , "root", 0);
 }
