@@ -60,7 +60,7 @@ C-----------------------------------------------
         CHARACTER(LEN=STEXT1) ::  TEXT1
         CHARACTER(LEN=NCHARLINE100) :: KEY3_GLOB
         CHARACTER(LEN=SCOMMENT) :: COMMENT
-        CHARACTER(LEN=64) :: MDS_LABEL
+        CHARACTER(LEN=512) :: MDS_LABEL
         INTEGER ,INTENT(IN) :: MODE
         TYPE(GROUP_)  ,DIMENSION(NGRPART) ,INTENT(IN) :: IGRPART
 C-----------------------------------------------

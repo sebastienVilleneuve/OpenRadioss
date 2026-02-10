@@ -106,7 +106,7 @@ extern "C"
                 LAYERPOOL[0] = '\0';
                 char *LAYER_STRING = new char[100];
                 LAYER_STRING[0] = '\0';
-                char *NUVAR_STRING = new char[100];
+                char *NUVAR_STRING = new char[1024];
                 NUVAR_STRING[0] = '\0';
                 char *IR_STRING = new char[100];
                 IR_STRING[0] = '\0';
@@ -116,7 +116,7 @@ extern "C"
                 IT_STRING[0] = '\0';
                 char *MID_STRING = new char[100];
                 MID_STRING[0] = '\0';
-                char *RES_STRING = new char[100];
+                char *RES_STRING = new char[1024];
                 RES_STRING[0] = '\0';
                 char *ID_STRING = new char[100];
                 ID_STRING[0] = '\0';
@@ -136,14 +136,14 @@ extern "C"
                 {
                         sprintf(NUVAR_STRING, " LAW %d", *idMatMds);
 #ifdef _WIN64
-                        strcat_s(RES_STRING, 100, NUVAR_STRING);
+                        strcat_s(RES_STRING, 1024, NUVAR_STRING);
 #else
                         RES_STRING = strcat(RES_STRING, NUVAR_STRING);
 #endif
 
                         sprintf(NUVAR_STRING, ": %s ", cmdsuvar);
 #ifdef _WIN64
-                        strcat_s(RES_STRING, 100, NUVAR_STRING);
+                        strcat_s(RES_STRING, 1024, NUVAR_STRING);
 #else
                         RES_STRING = strcat(RES_STRING, NUVAR_STRING);
 #endif
@@ -155,7 +155,7 @@ extern "C"
                 {
                         sprintf(NUVAR_STRING, " %d ", *nuvar);
 #ifdef _WIN64
-                        strcat_s(RES_STRING, 100, NUVAR_STRING);
+                        strcat_s(RES_STRING, 1024, NUVAR_STRING);
 #else
                         RES_STRING = strcat(RES_STRING, NUVAR_STRING);
 #endif

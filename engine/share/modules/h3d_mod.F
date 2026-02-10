@@ -412,7 +412,7 @@ C-----------------------------------------------
           INTEGER ::  IMDSVAR = 0
           INTEGER ::  IDMDS = 0
           INTEGER ::  IDMATMDS = 0
-          CHARACTER(LEN=64) ::  MDSVAR_NAME = ''
+          CHARACTER(LEN=512) ::  MDSVAR_NAME = ''
           INTEGER ::  SMDSVAR_NAME = 0
           INTEGER ::  GAUSS = 0
           INTEGER ::  IR = 0

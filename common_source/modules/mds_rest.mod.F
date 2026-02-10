@@ -30,6 +30,6 @@ Copyright>        commercial version may interest you: https://www.altair.com/ra
         INTEGER MDS_NMAT
         INTEGER, DIMENSION(:), ALLOCATABLE ::   MDS_MATID
         INTEGER, DIMENSION(:), ALLOCATABLE :: MDS_NDEPSVAR
-        CHARACTER (LEN=64), DIMENSION(:,:), ALLOCATABLE ::  MDS_LABEL
+        CHARACTER (LEN=512), DIMENSION(:,:), ALLOCATABLE ::  MDS_LABEL
         CHARACTER, DIMENSION(:,:,:), ALLOCATABLE :: MDS_FILES
       END MODULE

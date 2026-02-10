@@ -119,11 +119,11 @@ extern "C"
                 GAUSS_STRING[0] = '\0';
                 char *PLY_STRING = new char[100];
                 PLY_STRING[0] = '\0';
-                char *NUVAR_STRING = new char[100];
+                char *NUVAR_STRING = new char[1024];
                 NUVAR_STRING[0] = '\0';
                 char *MID_STRING = new char[100];
                 MID_STRING[0] = '\0';
-                char *RES_STRING = new char[100];
+                char *RES_STRING = new char[1024];
                 RES_STRING[0] = '\0';
                 char *ID_STRING = new char[100];
                 ID_STRING[0] = '\0';
