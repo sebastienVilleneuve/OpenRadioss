@@ -730,18 +730,12 @@ public:
 
             sdiString kernelFullType = this->p_pre_obj_lst->at(i)->GetKernelFullType();
 
-            sdiString inputFullType = this->p_pre_obj_lst->at(i)->GetInputFullType();
-            if (inputFullType.find('/') != std::string::npos) {
-                size_t secondSlashPos = inputFullType.find('/', inputFullType.find('/') + 1);
-                if (secondSlashPos != std::string::npos) {
-                    inputFullType = inputFullType.substr(0, secondSlashPos);
-                }
-            }
-
             bool isSame = true;
-            
-            if (!(strcmp(this->p_keyword.c_str(), inputFullType.c_str()) == 0)) {
-                isSame = false;
+            if (kernelFullType.find("/ELEMS") == 0) {
+                kernelFullType.erase(0, 6); // Remove "/ELEMS"
+                if (!(strcmp(this->p_keyword.c_str(), kernelFullType.c_str()) == 0)) {
+                    isSame = false;
+                }
             }
 
             if(this->p_pre_obj_lst->at(i) != nullptr && isSame)
@@ -1037,8 +1031,7 @@ public:
 
     //! Constructor for empty model
     ModelViewPO(const SDITypeMapper& typemapper, const CFGKernel *pCFGKernel=nullptr) :
-        ModelViewCFG(typemapper, pCFGKernel),
-        myTypeElementOwner(ENTITY_TYPE_NONE)
+        ModelViewCFG(typemapper, pCFGKernel)
     {
         p_nbPOTypes = HCDI_OBJ_TYPE_HC_MAX;
         p_preobjects = new std::vector<IMECPreObject*>[p_nbPOTypes];
@@ -1055,8 +1048,7 @@ public:
         ModelViewCFG(typemapper, pCFGKernel),
         p_preobjects(preobjects),
         p_nbPOTypes(nbPOTypes),
-        owningPreobjects(false),
-        myTypeElementOwner(ENTITY_TYPE_NONE)
+        owningPreobjects(false)
     {
         assert(p_preobjects && 0 < p_nbPOTypes);
         for(size_t i=0; i < HCDI_OBJ_TYPE_HC_MAX; ++i) p_isSorted[i] = SortNone;

@@ -37,9 +37,35 @@
 #include <HCDI/hcdi_utils.h>
 #include <MODEL_IO/cdr_reserveattribs.h>
 #include <MODEL_IO/hcioi_utils.h>
+#include <HCDI/hcdi_utils.h>
+#include "hw_cfg_reader_message.h"
 #include <assert.h>
+#include "hcioi_utils.h"
 
 
+#ifdef PARAMETER_NEW_API
+// Comparison functor with an additional string argument
+struct ParameterComparator {
+    std::string param_name;
+
+    ParameterComparator(const std::string& arg) : param_name(arg) {}
+
+    bool operator()(const IMECPreObject* param_obj1, const IMECPreObject* param_obj2) const {
+
+        int att_indx1 = param_obj1->GetIndex(IMECPreObject::ATY_SINGLE, IMECPreObject::VTY_STRING, param_name.c_str());
+        int att_indx2 = param_obj2->GetIndex(IMECPreObject::ATY_SINGLE, IMECPreObject::VTY_STRING, param_name.c_str());
+
+        if (att_indx1 < 0 || att_indx2 < 0)
+            return false;
+
+
+        string param_name1 = param_obj1->GetStringValue(att_indx1);
+        string param_name2 = param_obj2->GetStringValue(att_indx2);
+
+        return param_name1 < param_name2;
+    }
+};
+#endif
 
 ParameterPOImp::ParameterPOImp()
 {
@@ -62,7 +88,7 @@ void ParameterPOImp::ClearProcessedParameters()
 int ParameterPOImp::GetFileIndex() const
 {
     if (pCurParameterObj) return pCurParameterObj->GetFileIndex();
-    return 0;// evaluateHandler.GetIncludeId();
+    return 0;
 }
 int ParameterPOImp::GetIntValue() const
 {
@@ -315,6 +341,184 @@ void ModelFactoryReaderPO::EvaluateExpressionParameters(const MECMsgManager* pMs
     }
 }
 
+
+#ifdef PARAMETER_NEW_API
+static int get_paramname_beginindex(vector<IMECPreObject*>& objlst, int low, int high, string param_find, int n_size, string& paramname, string& paramscope)
+{
+    while (low <= high)
+    {
+        int mid = (low + high) / 2;
+
+        IMECPreObject* obj_mid = objlst[mid];
+        int att_indx_mid = obj_mid->GetIndex(IMECPreObject::ATY_SINGLE, IMECPreObject::VTY_STRING, paramname.c_str());
+        string param_name_mid = att_indx_mid >= 0 ? obj_mid->GetStringValue(att_indx_mid) : "";
+
+        
+        bool is_first = (mid == 0) ||
+            ([&]() {
+            IMECPreObject* obj_prev = objlst[mid - 1];
+            int att_indx_prev = obj_prev->GetIndex(IMECPreObject::ATY_SINGLE, IMECPreObject::VTY_STRING, paramname.c_str());
+            string param_name_prev = att_indx_prev >= 0 ? obj_prev->GetStringValue(att_indx_prev) : "";
+            return param_find > param_name_prev;
+                })();
+
+        if (param_name_mid == param_find && is_first)
+            return mid;
+        else if (param_name_mid < param_find)
+            low = mid + 1;
+        else
+            high = mid - 1;
+    }
+    return -1;
+}
+
+IParameter* ModelFactoryReaderPO::GetParameterObject(const char* param_str, const int file_index, void** ent_ptr)
+{
+    parameter_obj->ResetVariables();
+    
+    vector< IMECPreObject* > a_vec = GetPreObjectLst(HCDI_OBJ_TYPE_PARAMETERS);
+    size_t a_nb_objects = a_vec.size();
+
+    vector< IMECPreObject* >& a_vec1 = GetPreObjectLst(HCDI_OBJ_TYPE_INCLUDEFILES);
+
+    size_t a_nb_objects1 = a_vec1.size();
+
+    if (!a_nb_objects && !a_nb_objects1)
+        return parameter_obj;
+
+    bool do_sort = false;
+    for (int i = 0; i < a_vec1.size(); i++)
+    {
+        IDescriptor* pdescrp = HCDI_GetDescriptorHandle(a_vec1[i]->GetKernelFullType());
+        if (pdescrp)
+        {
+            const MvDrawable_t* a_drawable_p1 = pdescrp->getDrawablePtr(cdr::g_AttribParamName);
+            if (!a_drawable_p1)
+                continue;
+            string paramname_skey = GetAttribNameFromDrawable(pdescrp, cdr::g_AttribParamName);
+            if (paramname_skey != "")
+            {
+                do_sort = true;
+                a_vec.push_back(a_vec1[i]);
+            }
+        }
+    }
+    a_nb_objects = a_vec.size();
+    if (!a_nb_objects)
+        return parameter_obj;
+
+    IDescriptor* pdescrp = HCDI_GetDescriptorHandle(a_vec[0]->GetKernelFullType());
+    if (!pdescrp)
+        return parameter_obj;
+
+    if (do_sort)
+    {
+        string paramname_skey = GetAttribNameFromDrawable(pdescrp, "_PARAM_NAME");
+        sort(a_vec.begin(), a_vec.end(), ParameterComparator(paramname_skey));
+    }
+
+
+
+    string paramname_skey = GetAttribNameFromDrawable(pdescrp, cdr::g_AttribParamName);
+
+    string paramvalueint_skey = GetAttribNameFromDrawable(pdescrp, cdr::g_AttribParamValueInteger);
+    string paramvaluedouble_skey = GetAttribNameFromDrawable(pdescrp, cdr::g_AttribParamValueDouble);
+    string paramvaluetext_skey = GetAttribNameFromDrawable(pdescrp, cdr::g_AttribParamValueString);
+    string scope_skey = GetAttribNameFromDrawable(pdescrp, cdr::g_AttribParamScope);
+    string type_skey = GetAttribNameFromDrawable(pdescrp, cdr::g_AttribParamType);
+
+    int first_indx = get_paramname_beginindex(a_vec, 0, (int)a_vec.size() - 1, param_str, (int)a_vec.size(), paramname_skey, scope_skey);
+    if (first_indx < 0 || first_indx >= a_vec.size())
+        return parameter_obj;
+
+    IMECPreObject* found = nullptr;
+    for (int i = first_indx; i < a_vec.size(); i++)
+    {
+        IMECPreObject* obj = a_vec[i];
+        int sky_indx = obj->GetIndex(IMECPreObject::ATY_SINGLE, IMECPreObject::VTY_STRING, paramname_skey);
+        string cur_paramval = "";
+        if (sky_indx > -1)
+            cur_paramval = obj->GetStringValue(paramname_skey.c_str());
+        if (cur_paramval == param_str) {
+            sky_indx = obj->GetIndex(IMECPreObject::ATY_SINGLE, IMECPreObject::VTY_STRING, scope_skey);
+            string cur_pscope = "";
+            if (sky_indx > -1)
+                cur_pscope = obj->GetStringValue(scope_skey.c_str());
+            
+            int type = obj->GetEntityType();
+
+            bool is_submodel_param = false;
+            int submodel_index = -1;
+            if (type == HCDI_OBJ_TYPE_INCLUDEFILES)
+            {
+                int j = 0;
+                for (j = file_index; j >=0; j--)
+                {
+                    if (a_vec1[j] == obj)
+                    {
+                        is_submodel_param = true;
+                        submodel_index = j;
+                        break;
+                    }
+                }
+            }
+
+            if ((cur_pscope == "LOCAL" && is_submodel_param<0) || (cur_pscope == "LOCAL" && is_submodel_param && submodel_index > -1)) {
+                int ifileindx = obj->GetFileIndex();
+              
+                if (ifileindx == file_index || (submodel_index >= 0 && submodel_index < file_index)) {
+                    found = obj; // Found a local object with matching a
+                    break;
+                }
+                else
+                {
+                    // get to topmost parent, match local param there
+                    MECSubdeck* sub = MECSubdeck::mySubdeckVector[file_index];
+
+                    obj_type_e stype = sub->GetSubtype();
+                    int a_ind = -1;
+                    bool match_found = false;
+                    while (a_ind != 0)
+                    {
+                        a_ind = sub->GetParentIdx();
+                        if (a_ind < 0)
+                        {
+                            break;
+                        }
+
+                        if (a_ind == ifileindx)
+                        {
+                            found = obj;
+                            match_found = true;
+                            break;
+                        }
+                        sub = MECSubdeck::mySubdeckVector[a_ind];
+                    }
+                    if (match_found)
+                        break;
+                }
+            }
+            else if (found == nullptr) {
+                found = obj; // Found a global object
+            }
+        }
+        else if(first_indx)
+            break;
+    }
+    parameter_obj->SetCurParameterObj(found);
+
+    parameter_obj->SetCurParamValIntSkey(paramvalueint_skey);
+    parameter_obj->SetCurParamValDoubleSkey(paramvaluedouble_skey);
+    parameter_obj->SetCurParamValTextSkey(paramvaluetext_skey);
+    parameter_obj->SetCurParamValScopeSkey(scope_skey);
+    parameter_obj->SetCurParamValTypeSkey(type_skey);
+
+    return parameter_obj;
+}
+#endif
+
+
+
 void ModelFactoryReaderPO::AddSubDeckObjects()
 {
     vector<MECSubdeck*>::iterator It = MECSubdeck::mySubdeckVector.begin();
@@ -350,6 +554,7 @@ bool EntityHasNoId(IMECPreObject* preObj)
 
 void ModelFactoryReaderPO::PreTreatObject(const char* otype)
 {
+        // placeholder for future object combining logic
 }
 
 void ModelFactoryReaderPO::PostTreatObject(const char* otype)
@@ -370,6 +575,12 @@ void ModelFactoryReaderPO::PostTreatObject(const char* otype)
         IMECPreObject* a_pre_obj_p = (IMECPreObject*)(*itr);
         //SetParameterObjectUsageData(a_pre_obj_p);
     }
+}
+
+IMECPreObject* ModelFactoryReaderPO::CreateObject(const char *kernel_full_type, const char *input_full_type,
+                                                  const char *title, int id, int unit_id)
+{
+    return HCDI_GetPreObjectHandle(kernel_full_type, input_full_type, title, id, unit_id);
 }
 
 int ModelFactoryReaderPO::AddObject(const IMECPreObject& pre_object, const InputInfos::IdentifierValuePairList* metaarg)
@@ -474,6 +685,8 @@ CommonDataReaderCFG::~CommonDataReaderCFG()
         if (m_prev_loaded_fileformat != FF_UNKNOWN)
             MultiCFGKernelMgr::getInstance().SetActiveUserProfile(m_prev_loaded_fileformat);
     }
+
+    if(m_owningMessageList && m_pMessageList) delete m_pMessageList;
 }
 
 void CommonDataReaderCFG::ReadModel(const std::string& filepath, vector<IMECPreObject*>* preobjLst)
@@ -482,21 +695,40 @@ void CommonDataReaderCFG::ReadModel(const std::string& filepath, vector<IMECPreO
     m_pmodel->SetPreObjectLst(preobjLst);
     MvFileFormat_e a_fileformat = MultiCFGKernelMgr::getInstance().GetActiveUserProfile();
 
+    HWCFGReader* a_reader = nullptr;
+
     // Due to historical reasons, the CFG files for LSDyna are inconsistent. 
     // To handle this, we need to override the reader to correctly parse the deck.
     // In the future, as the CFG files are incrementally corrected, this check can be removed.
     if (m_psyntaxInfos->getAppMode() == HCDI_SOLVER_LSDYNA)
     {
-        HWCFGReaderLSDyna  a_reader(filepath.c_str(), a_fileformat, *m_psyntaxInfos, *m_pinputInfo,
-                                    m_pfileFactory);
-        a_reader.readModel(m_pmodel);
+        a_reader = new HWCFGReaderLSDyna(filepath.c_str(), a_fileformat, *m_psyntaxInfos, *m_pinputInfo,
+                                         m_pfileFactory);
     }
     else
     {
-        HWCFGReader  a_reader(filepath.c_str(), a_fileformat, *m_psyntaxInfos, *m_pinputInfo,
-                              m_pfileFactory);
-        a_reader.readModel(m_pmodel);
+        a_reader = new HWCFGReader(filepath.c_str(), a_fileformat, *m_psyntaxInfos, *m_pinputInfo,
+                                   m_pfileFactory);
     }
+
+    // set message list to HWCFGReader, if we have one
+    if(m_pMessageList) a_reader->SetMessageList(m_pMessageList, false);
+
+    // read model
+    a_reader->readModel(m_pmodel);
+
+    // if we have no message list, we have to copy the one of the HWCFGReader
+    if(!m_pMessageList)
+    {
+        const HWCFGReaderMessageList* pMessageList = a_reader->GetMessageList();
+        if(pMessageList)
+        {
+            m_pMessageList = new HWCFGReaderMessageList(*pMessageList);
+            m_owningMessageList = true;
+        }
+    }
+
+    delete a_reader;
 }
 
 
@@ -515,4 +747,11 @@ IMECPreObject* CommonDataReaderCFG::GetPreObject(unsigned int etype, unsigned in
     if (indx >= objlst.size())
         return nullptr;
     return objlst[indx];
+}
+
+void CommonDataReaderCFG::SetMessageList(HWCFGReaderMessageList* pMessageList, bool owningMessageList)
+{
+    if(m_owningMessageList && m_pMessageList) delete m_pMessageList;
+    m_pMessageList = pMessageList;
+    m_owningMessageList = owningMessageList;
 }
