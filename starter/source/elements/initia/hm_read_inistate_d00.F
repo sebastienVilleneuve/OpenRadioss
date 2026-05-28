@@ -335,6 +335,8 @@ C---------
                 ! Reading  ---  ID_ELEM, FILL  ---
                 CALL HM_GET_INT_ARRAY_INDEX('brick_ID',ID_ELEM,J,IS_AVAILABLE,LSUBMODEL)
                 CALL HM_GET_FLOAT_ARRAY_INDEX('value',FILL,J,IS_AVAILABLE,LSUBMODEL,UNITAB)
+                
+                IF(ID_ELEM == 0) CYCLE
 !
                 I=I+1
                 ID_SOLID_SIGI(I)  = ID_ELEM
@@ -350,6 +352,8 @@ C---------
                 ! Reading  ---  ID_ELEM, EPSP  ---
                 CALL HM_GET_INT_ARRAY_INDEX('brick_ID',ID_ELEM,J,IS_AVAILABLE,LSUBMODEL)
                 CALL HM_GET_FLOAT_ARRAY_INDEX('value',EPSP,J,IS_AVAILABLE,LSUBMODEL,UNITAB)
+                
+                IF(ID_ELEM == 0) CYCLE
 !
                 I=I+1
                 ID_SOLID_SIGI(I)  = ID_ELEM
@@ -365,6 +369,8 @@ C---------
                 ! Reading  ---  ID_ELEM, ENER  ---
                 CALL HM_GET_INT_ARRAY_INDEX('brick_ID',ID_ELEM,J,IS_AVAILABLE,LSUBMODEL)
                 CALL HM_GET_FLOAT_ARRAY_INDEX('value',ENER,J,IS_AVAILABLE,LSUBMODEL,UNITAB)
+                
+                IF(ID_ELEM == 0) CYCLE
 !
                 I=I+1
                 ID_SOLID_SIGI(I)  = ID_ELEM
@@ -380,6 +386,8 @@ C---------
                 ! Reading  ---  ID_ELEM, DENS  ---
                 CALL HM_GET_INT_ARRAY_INDEX('brick_ID',ID_ELEM,J,IS_AVAILABLE,LSUBMODEL)
                 CALL HM_GET_FLOAT_ARRAY_INDEX('value',DENS,J,IS_AVAILABLE,LSUBMODEL,UNITAB)
+                
+                IF(ID_ELEM == 0) CYCLE
 !
                 I=I+1
                 ID_SOLID_SIGI(I)  = ID_ELEM
@@ -400,8 +408,10 @@ C---------
                 CALL HM_GET_FLOAT_ARRAY_INDEX('SIGMA_xy',S(4),J,IS_AVAILABLE,LSUBMODEL,UNITAB)
                 CALL HM_GET_FLOAT_ARRAY_INDEX('SIGMA_yz',S(5),J,IS_AVAILABLE,LSUBMODEL,UNITAB)
                 CALL HM_GET_FLOAT_ARRAY_INDEX('SIGMA_xz',S(6),J,IS_AVAILABLE,LSUBMODEL,UNITAB)
-!
+!                
+                IF(ID_ELEM == 0) CYCLE
                 I=I+1
+
                 ID_SOLID_SIGI(I)  = ID_ELEM
                 DO K=1,6
                   SIGI(K,I) = S(K)
@@ -421,6 +431,8 @@ C---------
                 CALL HM_GET_INT_ARRAY_INDEX('Isolid',JJHBE,J,IS_AVAILABLE,LSUBMODEL)
                 CALL HM_GET_INT_ARRAY_INDEX('nvars',NUVAR,J,IS_AVAILABLE,LSUBMODEL)
 !
+                IF(ID_ELEM == 0) CYCLE
+
                 IE=UEL2SYS(ID_ELEM,KSYSUSRS,NUMELS)
 !
                 IF (IE == 0) THEN        
@@ -511,6 +523,8 @@ C---------
                   ENDDO
                   IE = IGRBRIC(JGBR)%ENTITY(1)
                   ID_ELEM = IXS(NIXS,IE)
+                ELSE IF(ID_ELEM == 0) THEN
+                  CYCLE
                 ENDIF
 !
 !
@@ -895,6 +909,8 @@ C---------
                   ENDDO
                   IE = IGRBRIC(JGBR)%ENTITY(1)
                   ID_ELEM = IXS(NIXS,IE)
+                ELSE IF(ID_ELEM == 0) THEN
+                  CYCLE
                 ENDIF
 !
 !                ELT = SET_USRTOS(ID_ELEM,MAP_TABLES%ISOLM,NUMELS)
@@ -1271,7 +1287,9 @@ C---------
                 CALL HM_GET_INT_ARRAY_INDEX('npts'     ,NPTS,J,IS_AVAILABLE,LSUBMODEL)
                 CALL HM_GET_INT_ARRAY_INDEX('nptt'     ,NPTT,J,IS_AVAILABLE,LSUBMODEL)
                 CALL HM_GET_INT_ARRAY_INDEX('nlay'     ,NLAY,J,IS_AVAILABLE,LSUBMODEL)
-!
+!                
+                IF(ID_ELEM == 0) CYCLE
+
                 I=I+1
                 IF (JJHBE == 2) JJHBE = 1
                 ID_SOLID_SIGI(I)  = ID_ELEM
@@ -1460,7 +1478,9 @@ C---------
                 CALL HM_GET_INT_ARRAY_INDEX('npts'     ,NPTS,J,IS_AVAILABLE,LSUBMODEL)
                 CALL HM_GET_INT_ARRAY_INDEX('nptt'     ,NPTT,J,IS_AVAILABLE,LSUBMODEL)
                 CALL HM_GET_INT_ARRAY_INDEX('nlay'     ,NLAY,J,IS_AVAILABLE,LSUBMODEL)
-!
+!                
+                IF(ID_ELEM == 0) CYCLE
+
                 I=I+1
                 IF (JJHBE == 2) JJHBE = 1
                 ID_SOLID_SIGI(I)  = ID_ELEM
@@ -1734,7 +1754,9 @@ C---------
 !
 !                ELT = SET_USRTOS(ID_ELEM,MAP_TABLES%ISOLM,NUMELS)
 !                IE = MAP_TABLES%ISOLM(ELT,2)
-!
+!                
+                  IF(ID_ELEM == 0) CYCLE
+
                   IE=UEL2SYS(ID_ELEM,KSYSUSRS,NUMELS)
 !
                   I=I+1
@@ -1786,7 +1808,9 @@ C---------
                   CALL HM_GET_INT_ARRAY_INDEX('Isolnod'  ,ISOLNOD,J,IS_AVAILABLE,LSUBMODEL)
                   CALL HM_GET_INT_ARRAY_INDEX('Prop_type',IGTYP,J,IS_AVAILABLE,LSUBMODEL)
                   CALL HM_GET_INT_ARRAY_INDEX('Isolid'   ,JJHBE,J,IS_AVAILABLE,LSUBMODEL)
-!
+!                
+                  IF(ID_ELEM == 0) CYCLE
+
                   I=I+1
                   ID_SOLID_SIGI(I)  = ID_ELEM
                   IF (JJHBE == 2) JJHBE = 1
@@ -1857,7 +1881,9 @@ C---------
                   CALL HM_GET_INT_ARRAY_INDEX('Isolid'   ,JJHBE,J,IS_AVAILABLE,LSUBMODEL)
                   CALL HM_GET_INT_ARRAY_INDEX('Ismstr'   ,ISMSTR,J,IS_AVAILABLE,LSUBMODEL)
                   CALL HM_GET_INT_ARRAY_INDEX('Nsrot'   ,NSROT,J,IS_AVAILABLE,LSUBMODEL)
-!
+!                
+                  IF(ID_ELEM == 0) CYCLE
+
                   I=I+1
                   IF (JJHBE == 2) JJHBE = 1
                   ID_SOLID_SIGI(I)  = ID_ELEM
