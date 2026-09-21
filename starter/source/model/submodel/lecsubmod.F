@@ -401,6 +401,21 @@ C-------------------------
       CALL MY_DEALLOC(TAGNODSUB)
       IF(ALLOCATED(NODESSUB)) CALL MY_DEALLOC(NODESSUB)
 C-------------------------
+C CHECK UNICITY OF SUBMODEL IDs
+C-------------------------
+      DO I=1,NSUBMOD
+        DO J=I+1,NSUBMOD
+          IF (LSUBMODEL(I)%NOSUBMOD == LSUBMODEL(J)%NOSUBMOD .AND.
+     .        LSUBMODEL(J)%NOSUBMOD .NE. 0) THEN
+            CALL ANCMSG(MSGID=3169,
+     .                  MSGTYPE=MSGERROR,
+     .                  ANMODE=ANINFO,
+     .                  I1=LSUBMODEL(I)%NOSUBMOD)
+          ENDIF
+        ENDDO
+      ENDDO
+
+C-------------------------
 c MAKE TRANSFORMATION ON SUBMODEL NODES
 C-------------------------   
 c      IF (IPRI > 5) THEN 
