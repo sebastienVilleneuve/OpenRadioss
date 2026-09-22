@@ -123,6 +123,7 @@ C-----------------------------------------------
       CHARACTER*5 CHAR_PROP,CHAR_MAT
       CHARACTER*7::CHAR_MAT_TYPE,CHAR_PROP_TYPE
       LOGICAL IS_AVAILABLE, USER_LAW, IS_ASSOCIATED_LAW51
+      LOGICAL IS_SPH_LINKED
       INTEGER PID,MID,SID,ID,I,IMID,IPID,ISID,ITH, IGTYP,XFEMFLG,
      .        IXFEM,IHBE,ILAW,UID,J,IDMAT_PLY,
      .        ILAW_PLY,IPMAT,NPT,IDPARTSPH,SUB_INDEX, IDS, CNT,
@@ -216,8 +217,6 @@ C--------------------------------------------------
            IGTYP=0
            IF(IS_FILLED) THEN
              CALL ANCMSG(MSGID=178,MSGTYPE=MSGERROR,ANMODE=ANINFO,I1=ID,C1=TITR,I2=PID)
-           ELSE
-             CALL ANCMSG(MSGID=178,MSGTYPE=MSGWARNING,ANMODE=ANINFO,I1=ID,C1=TITR,I2=PID)
            ENDIF
            TITR1=' '
         ELSE
@@ -225,7 +224,16 @@ C--------------------------------------------------
             IGTYP=NINT(GEO(12,IPID))
         ENDIF
 
-        IF(IS_FILLED .OR. IGTYP == 34) THEN
+        IS_SPH_LINKED = .FALSE.
+        IF(IGTYP == 34) THEN
+          DO J=1,NPART
+            IF(IPART(2,J) > 0) THEN
+              IF(IGEO(38,IPART(2,J)) == I) IS_SPH_LINKED = .TRUE.
+            ENDIF
+          ENDDO
+        ENDIF
+
+        IF(IS_FILLED .OR. IS_SPH_LINKED) THEN
 
           IF(IGTYP == 17 .OR. IGTYP == 51) IPART_STACK = 1
           IF(IGTYP ==  52) IPART_PCOMPP = 1
@@ -447,12 +455,6 @@ C----SPH SMOOTHING LENGTH OUTPUT ( /PROP/SPH (Type34) )
           ELSE
             IMID = NINTRI(MID,IPM,NPROPMI,NUMMAT,1)
             IF(IMID == 0) THEN
-              CALL ANCMSG(MSGID=179,
-     .                  MSGTYPE=MSGWARNING,
-     .                  ANMODE=ANINFO,
-     .                  I1=ID,
-     .                  C1=TITR,
-     .                  I2=MID)
               IMID = NUMMAT  ! fallback safe default
             ENDIF
           ENDIF

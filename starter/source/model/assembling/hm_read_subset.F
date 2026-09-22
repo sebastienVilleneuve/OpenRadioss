@@ -64,6 +64,8 @@ C-----------------------------------------------
       USE GROUPDEF_MOD     
       USE SUBMODEL_MOD
       USE HM_OPTION_READ_MOD
+      use hm_is_part_with_elements_mod
+      use, intrinsic :: iso_c_binding , only : c_bool
 C-----------------------------------------------
 C   I m p l i c i t   T y p e s
 C-----------------------------------------------
@@ -96,6 +98,7 @@ C-----------------------------------------------
       CHARACTER(LEN=NCHARTITLE) :: TITR
       CHARACTER MESS*40
       LOGICAL IS_AVAILABLE
+      logical(c_bool) :: IS_FILLED
 C-----------------------------------------------
 C   E x t e r n a l   F u n c t i o n s
 C-----------------------------------------------
@@ -116,6 +119,7 @@ C  SUBSET(ISU)%NVARTH : nb of subset TH/ATH variable (10)
 !     (  /iTH --> 9 additional time history files + 1 for /TH )
 C=======================================================================
       IS_AVAILABLE = .FALSE.
+      IS_FILLED = .FALSE.
       SUB_INDEX = 0
       UID = 0
       ISU = 0
@@ -274,6 +278,8 @@ C-------------------------------------
 c     CHECK SUBSETs REFERENCED BY PARTs
 C-------------------------------------
       DO K=1,NPART
+        IS_FILLED = .FALSE.
+        call hm_is_part_with_elements(IPART(4,K),IS_FILLED)
         IF (IPART(3,K) == 0) THEN
            CALL FRETITL2(TITR,IPART(LIPART1-LTITR+1,K),LTITR)
            CALL ANCMSG(MSGID=183,
